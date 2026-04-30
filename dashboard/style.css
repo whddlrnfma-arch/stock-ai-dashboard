@@ -1,3 +1,26 @@
+/* ============================================================
+   dashboard/style.css  v2.0
+   [Environment-Agnostic Edition]
+   ✔ 로컬 시스템 폰트 의존 제거
+   ✔ backdrop-filter @supports 폴백 내장
+   ✔ box-sizing: border-box 전역 강제
+   ============================================================ */
+
+/* ── 0. ENVIRONMENT NORMALIZATION ────────────────────────────── */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+/* backdrop-filter 폴백 */
+@supports not (backdrop-filter: blur(1px)) {
+  .sidebar        { background: rgba(25,33,49,0.98)  !important; }
+  .stat-card      { background: rgba(25,33,49,0.98)  !important; }
+  .table-section  { background: rgba(25,33,49,0.98)  !important; }
+}
+@supports not (-webkit-backdrop-filter: blur(1px)) {
+  .sidebar        { background: rgba(25,33,49,0.98)  !important; }
+}
+
+/* ── DESIGN TOKENS ───────────────────────────────────────────── */
 :root {
     --bg-dark: #0b0f19;
     --bg-panel: rgba(25, 33, 49, 0.6);
@@ -10,11 +33,13 @@
     --border-color: rgba(255, 255, 255, 0.08);
 }
 
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont,
+                 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
 body {
@@ -37,6 +62,7 @@ body {
 .sidebar {
     width: 260px;
     background: var(--bg-panel);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -167,6 +193,7 @@ body {
 
 .stat-card {
     background: var(--bg-panel);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -211,6 +238,7 @@ body {
 /* Table */
 .table-section {
     background: var(--bg-panel);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
     border-radius: 16px;

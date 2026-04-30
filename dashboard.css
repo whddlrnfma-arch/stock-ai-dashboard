@@ -1,13 +1,62 @@
 /* ================================================================
-   QuantTerminal Pro — dashboard.css
+   QuantTerminal Pro — dashboard.css  v2.0
    STEP 1: Design Tokens · Reset · Header · Magic Tab · Layout
+
+   [Environment-Agnostic Edition]
+   ✔ 로컬 시스템 폰트 의존 제거 (SF Pro, Pretendard 폴백 없음)
+   ✔ backdrop-filter @supports 폴백 내장
+   ✔ box-sizing: border-box 전역 강제
+   ✔ 모든 경로 상대 경로 (./assets/...)
+   ✔ 캐시 버스팅: HTML에서 ?v=2.0 쿼리 스트링 사용
 ================================================================ */
+
+/* ── 0. ENVIRONMENT NORMALIZATION ────────────────────────────── */
+/*
+  브라우저 기본 스타일 차이를 원천 봉쇄하는 미니 Reset.
+  box-sizing: border-box를 모든 요소에 강제 적용.
+*/
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+/*
+  backdrop-filter 미지원 환경 폴백:
+  blur 효과가 없어도 레이아웃이 보이도록 불투명 배경 확보.
+*/
+@supports not (backdrop-filter: blur(1px)) {
+  .header       { background: rgba(245,245,247,0.97) !important; }
+  .subheader    { background: rgba(255,255,255,0.97) !important; }
+  .stat-pill    { background: rgba(255,255,255,0.97) !important; }
+  .stock-card   { background: rgba(255,255,255,0.97) !important; }
+  .modal-panel  { background: rgba(255,255,255,0.97) !important; }
+  .toast        { background: rgba(255,255,255,0.97) !important; }
+  .news-card    { background: rgba(255,255,255,0.97) !important; }
+  .news-hero    { background: #FFFFFF                !important; }
+}
+
+@supports not (-webkit-backdrop-filter: blur(1px)) {
+  .header       { background: rgba(245,245,247,0.97) !important; }
+  .subheader    { background: rgba(255,255,255,0.97) !important; }
+}
+
+/* Dark mode backdrop-filter 폴백 */
+@media (prefers-color-scheme: dark) {
+  @supports not (backdrop-filter: blur(1px)) {
+    .header     { background: rgba(0,0,0,0.97)      !important; }
+    .subheader  { background: rgba(18,18,20,0.97)   !important; }
+    .stock-card { background: rgba(28,28,30,0.97)   !important; }
+    .modal-panel{ background: rgba(22,22,24,0.97)   !important; }
+    .toast      { background: rgba(44,44,46,0.97)   !important; }
+  }
+}
+
+
 
 /* ── 1. DESIGN TOKENS (:root) ──────────────────────────────── */
 :root {
   /* Typography */
-  --font:          'Inter', 'Noto Sans KR', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:     'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --font:          'Inter', 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont,
+                    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'Fira Code', 'Consolas', 'SF Mono', 'Menlo', monospace;
 
   --text-xs:  11px; --text-sm: 12px; --text-base: 14px;
   --text-md:  16px; --text-lg: 18px; --text-xl:   20px;

@@ -1,6 +1,10 @@
 import logging
 import time
 from cachetools import TTLCache
+import sys
+from PyQt5.QtWidgets import QApplication
+
+SERVER_URL = "http://127.0.0.1:8000"
 
 # 로깅 설정 (방어적 프로그래밍의 핵심)
 logger = logging.getLogger(__name__)
@@ -149,4 +153,10 @@ class KiwoomLogic:
 
         except Exception as e:
             logger.error(f"DB 정리 루프 실행 중 에러 발생: {e}")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    logic = KiwoomLogic()
+    logger.info("✅ KiwoomLogic 시작 (서버PC 모드), 실시간 데이터 대기 중...")
+    sys.exit(app.exec_())
 

@@ -5,10 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="퀀트 주식 자동매매 터미널 - 실시간 단타 및 스윙 전략 대시보드" />
   <title>QuantTerminal — 자동매매 대시보드</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <!-- Google Fonts: Inter + Noto Sans KR (CDN 임베드 — 로컬 폰트 설치 불필요) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
+  <link rel="stylesheet" href="style.css?v=2.0" />
 </head>
 <body>
 
@@ -201,6 +213,6 @@
   ============================================== -->
   <div class="toast-area" id="toast-area" aria-live="polite"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.0"></script>
 </body>
 </html>

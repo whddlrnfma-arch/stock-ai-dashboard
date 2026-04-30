@@ -6,12 +6,23 @@
   <meta name="description" content="퀀트 자동매매 터미널 — 실시간 단타 · 스윙 · 글로벌 뉴스 통합 대시보드" />
   <title>QuantTerminal Pro</title>
 
-  <!-- Google Fonts: Inter + Noto Sans KR -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <!-- Google Fonts: Inter + Noto Sans KR (CDN 임베드 — 로컬 폰트 설치 불필요) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
 
-  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="dashboard.css?v=2.0" />
 </head>
 <body>
 
@@ -304,6 +315,6 @@
   ============================================================ -->
   <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <script src="dashboard.js"></script>
+  <script src="dashboard.js?v=2.0"></script>
 </body>
 </html>

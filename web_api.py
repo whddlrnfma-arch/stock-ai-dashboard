@@ -11,7 +11,7 @@ app = FastAPI(title="AntiGravity Stock Dashboard API")
 # 1. CORS 설정: 외부 기기(스마트폰, 맥북) 접속 허용
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://stockai.mooo.com:8000", "http://stockai.mooo.com", "http://127.0.0.1:8000", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -116,24 +116,16 @@ def get_stats():
 
 # 5. 대시보드 화면(HTML) 연결 (가장 아래에 위치)
 
-# 실행 중인 파일 위치를 기준으로 dashboard 폴더를 자동으로 찾습니다.
-current_dir = os.path.dirname(os.path.abspath(__file__))
-dashboard_path = os.path.join(current_dir, "dashboard")
+# 서버PC(C:\STOCK AI) 절대 경로 명시
+dashboard_path = r"C:\STOCK AI\dashboard"
 
 print(f"\n--- 시스템 시작 정보 ---")
-print(f"현재 파일 위치: {current_dir}")
+print(f"대시보드 경로: {dashboard_path}")
 
 if os.path.exists(dashboard_path):
     # 루트("/")로 접속 시 dashboard 폴더의 index.html을 보여줍니다.
     app.mount("/", StaticFiles(directory=dashboard_path, html=True), name="dashboard")
     print(f"✅ 대시보드 화면 연결 성공: {dashboard_path}")
 else:
-    # 자동 경로 실패 시 수동 경로 시도
-    manual_path = r"C:\STOCK AI\dashboard"
-    if os.path.exists(manual_path):
-        app.mount("/", StaticFiles(directory=manual_path, html=True), name="dashboard")
-        print(f"✅ 수동 경로로 대시보드 연결 성공: {manual_path}")
-    else:
-        print(f"❌ 오류: 대시보드 폴더를 찾을 수 없습니다.")
-        print(f"   'dashboard' 폴더가 {current_dir} 안에 있는지 확인하세요.")
+    print(f"❌ 오류: 대시보드 폴더를 찾을 수 없습니다. ({dashboard_path})")
 print(f"------------------------\n")

@@ -1,14 +1,41 @@
 /* ============================================================
-   QUANT TERMINAL — style.css
+   QUANT TERMINAL — style.css  v2.0
    STEP 1: Design System Tokens + Global Reset + Layout Skeleton
+
+   [Environment-Agnostic Edition]
+   ✔ 로컬 시스템 폰트 의존 제거 (SF Pro, Pretendard 폴백 없음)
+   ✔ backdrop-filter @supports 폴백 내장
+   ✔ box-sizing: border-box 전역 강제
+   ✔ 캐시 버스팅: HTML에서 ?v=2.0 쿼리 스트링 사용
    ============================================================ */
+
+/* ── 0. ENVIRONMENT NORMALIZATION ────────────────────────────── */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+/* backdrop-filter 미지원 환경 폴백 */
+@supports not (backdrop-filter: blur(1px)) {
+  .app-header    { background: rgba(245,245,247,0.97) !important; }
+  .stat-chip     { background: rgba(255,255,255,0.97) !important; }
+  .modal-backdrop{ background: rgba(0,0,0,0.50)       !important; }
+  .modal-container{ background: rgba(255,255,255,0.99)!important; }
+  .toast         { background: rgba(255,255,255,0.97) !important; }
+  .panel         { background: rgba(255,255,255,0.97) !important; }
+}
+
+@supports not (-webkit-backdrop-filter: blur(1px)) {
+  .app-header    { background: rgba(245,245,247,0.97) !important; }
+}
+
+
+
 
 /* ── 1. DESIGN SYSTEM TOKENS (:root) ───────────────────────── */
 :root {
   /* — Typography — */
-  --font-sans:       'Inter', 'Noto Sans KR', 'SF Pro Display', 'Pretendard',
-                      -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:        'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --font-sans:       'Inter', 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont,
+                      'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:        'Fira Code', 'Consolas', 'SF Mono', 'Menlo', monospace;
 
   --text-xs:          11px;
   --text-sm:          12px;
