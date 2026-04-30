@@ -115,20 +115,20 @@ class KiwoomLogic(QMainWindow):
                     # MERGE INTO를 사용해 종목코드가 있으면 UPDATE, 없으면 INSERT (UPSERT)
                     sql = """
                     MERGE INTO TRADING_TARGETS t
-                    USING (SELECT :1 AS code FROM dual) s
-                    ON (t.SYMBOL_CODE = s.code)
+                    USING (SELECT :code AS CODE, :name AS NAME, :price AS PRICE, :notes AS NOTES FROM DUAL) s
+                    ON (t.SYMBOL_CODE = s.CODE)
                     WHEN MATCHED THEN
                         UPDATE SET 
                             DETECT_TIME = SYSTIMESTAMP,
-                            DETECT_PRICE = :2,
-                            NOTES = :3,
-                            SYMBOL_NAME = :4,
+                            DETECT_PRICE = s.PRICE,
+                            NOTES = s.NOTES,
+                            SYMBOL_NAME = s.NAME,
                             STRATEGY_CODE = 'REALTIME'
                     WHEN NOT MATCHED THEN
                         INSERT (SYMBOL_CODE, SYMBOL_NAME, STRATEGY_CODE, DETECT_PRICE, NOTES)
-                        VALUES (:1, :4, 'REALTIME', :2, :3)
+                        VALUES (s.CODE, s.NAME, 'REALTIME', s.PRICE, s.NOTES)
                     """
-                    cursor.execute(sql, (code, price, notes, name))
+                    cursor.execute(sql, {"code": code, "name": name, "price": price, "notes": notes})
                 conn.commit()
         except Exception as e:
             print(f"❌ DB Update Error ({code} {name}): {e}")
