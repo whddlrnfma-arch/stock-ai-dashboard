@@ -110,6 +110,18 @@ class KiwoomLogic(QMainWindow):
             # DB 부하를 줄이기 위해 로컬 딕셔너리로 관리하는 방법도 있으나,
             # '수신된 데이터를 오라클 DB에 즉시 업데이트' 요구사항에 맞춰 바로 UPSERT
             name = self.kiwoom.dynamicCall("GetMasterCodeName(QString)", [code]).strip()
+            
+            # [2차 필터링 방어 로직] 1. 이름 기반 필터링
+            invalid_names = ['ETF', 'ETN', '스팩', 'KODEX', 'TIGER', 'ACE', 'KBSTAR']
+            if any(keyword in name for keyword in invalid_names) or name.endswith('우') or name.endswith('우B'):
+                return
+                
+            # [2차 필터링 방어 로직] 2. 상태 기반 필터링
+            state = self.kiwoom.dynamicCall("GetMasterStockState(QString)", [code])
+            invalid_states = ['관리종목', '환기종목', '거래정지', '상장폐지', '투자경고', '투자위험']
+            if any(keyword in state for keyword in invalid_states):
+                return
+                
             notes = f"등락률: {change_rate_str}%"
             
             self.update_db(code, name, price, notes)
