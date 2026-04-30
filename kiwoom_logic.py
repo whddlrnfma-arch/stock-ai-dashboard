@@ -56,6 +56,12 @@ class KiwoomLogic(QMainWindow):
     def on_event_connect(self, err_code):
         if err_code == 0:
             print("✅ 키움 OpenAPI 로그인 성공!")
+            
+            # 자동 매매/조회 시 매번 계좌 비밀번호를 입력하지 않도록 
+            # KOA_Functions("ShowAccountWindow")를 호출해 '계좌비밀번호 저장' 창을 띄웁니다.
+            # (최초 1회 설정하면 이후로는 묻지 않고 바로 패스됩니다)
+            self.kiwoom.dynamicCall("KOA_Functions(QString, QString)", "ShowAccountWindow", "")
+            
             self.start_realtime_monitoring()
         else:
             print(f"❌ 키움 API 연결 실패 (에러코드: {err_code})")
