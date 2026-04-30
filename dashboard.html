@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="퀀트 자동매매 터미널 — 실시간 단타 · 스윙 · 글로벌 뉴스 통합 대시보드" />
+  <title>QuantTerminal Pro</title>
+
+  <!-- Google Fonts: Inter + Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER — Fixed top bar
+  ============================================================ -->
+  <header class="header" id="app-header">
+
+    <!-- Left: Logo & Connection Status -->
+    <div class="header-section header-left">
+      <div class="logo" id="logo">
+        <div class="logo-mark">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M10 2L3 7V18H7V12H13V18H17V7L10 2Z" fill="url(#logo-grad)"/>
+            <defs>
+              <linearGradient id="logo-grad" x1="3" y1="2" x2="17" y2="18" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0071E3"/>
+                <stop offset="100%" stop-color="#5E5CE6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">QuantTerminal</span>
+        <span class="logo-version">Pro</span>
+      </div>
+
+      <div class="connection-status" id="connection-status" title="실시간 서버 연결 상태">
+        <span class="status-pulse" id="status-pulse"></span>
+        <span class="status-text" id="status-text">연결 중...</span>
+      </div>
+    </div>
+
+    <!-- Center: Magic Tab Navigation -->
+    <nav class="header-section header-center" aria-label="주요 탭 네비게이션">
+      <div class="magic-tab-nav" id="magic-tab-nav" role="tablist">
+        <!-- The sliding pill indicator — absolutely positioned, moved by JS -->
+        <span class="tab-indicator" id="tab-indicator" aria-hidden="true"></span>
+
+        <button
+          class="tab-btn active"
+          id="tab-btn-scalp"
+          role="tab"
+          aria-selected="true"
+          aria-controls="view-scalp"
+          data-tab="scalp"
+          data-index="0"
+        >
+          <span class="tab-icon" aria-hidden="true">⚡️</span>
+          <span class="tab-label">실시간 단타</span>
+        </button>
+
+        <button
+          class="tab-btn"
+          id="tab-btn-swing"
+          role="tab"
+          aria-selected="false"
+          aria-controls="view-swing"
+          data-tab="swing"
+          data-index="1"
+        >
+          <span class="tab-icon" aria-hidden="true">🌊</span>
+          <span class="tab-label">스윙</span>
+        </button>
+
+        <button
+          class="tab-btn"
+          id="tab-btn-news"
+          role="tab"
+          aria-selected="false"
+          aria-controls="view-news"
+          data-tab="news"
+          data-index="2"
+        >
+          <span class="tab-icon" aria-hidden="true">🌐</span>
+          <span class="tab-label">글로벌 뉴스</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Right: Market Tickers + Clock + Actions -->
+    <div class="header-section header-right">
+      <!-- Compact Market Indices -->
+      <div class="market-indices" id="market-indices">
+        <div class="index-item">
+          <span class="index-name">KOSPI</span>
+          <span class="index-val rise num" id="idx-kospi">2,587.43</span>
+          <span class="index-chg rise num" id="idx-kospi-chg">▲0.48%</span>
+        </div>
+        <div class="index-sep"></div>
+        <div class="index-item">
+          <span class="index-name">KOSDAQ</span>
+          <span class="index-val fall num" id="idx-kosdaq">748.12</span>
+          <span class="index-chg fall num" id="idx-kosdaq-chg">▼0.49%</span>
+        </div>
+        <div class="index-sep"></div>
+        <div class="index-item">
+          <span class="index-name">USD/KRW</span>
+          <span class="index-val rise num" id="idx-usd">1,384.5</span>
+          <span class="index-chg rise num" id="idx-usd-chg">▲0.15%</span>
+        </div>
+      </div>
+
+      <!-- Live Clock -->
+      <div class="header-clock" id="header-clock">
+        <span class="clock-display num" id="clock-display">--:--:--</span>
+        <span class="clock-tz">KST</span>
+      </div>
+
+      <!-- Icon Buttons -->
+      <div class="header-actions">
+        <button class="hdr-icon-btn" id="btn-notification" title="알림" aria-label="알림">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="badge-dot" id="notif-badge">3</span>
+        </button>
+
+        <button class="hdr-icon-btn" id="btn-settings" title="설정" aria-label="설정">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================================================
+       SUBHEADER — Context bar (stats strip, changes per active tab)
+  ============================================================ -->
+  <div class="subheader" id="app-subheader">
+
+    <!-- Scalp & Swing share stats strip -->
+    <div class="subheader-view" id="sub-scalp" data-sub="scalp">
+      <div class="stats-row">
+        <div class="stat-pill">
+          <span class="stat-label">활성 종목</span>
+          <span class="stat-val num" id="stat-scalp-active">12</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">평균 진입강도</span>
+          <span class="stat-val accent num" id="stat-scalp-strength">84%</span>
+        </div>
+        <div class="stat-pill warn-pill">
+          <span class="stat-label">이탈 대기</span>
+          <span class="stat-val warn num" id="stat-scalp-fadeout">2</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">금일 조건 포착</span>
+          <span class="stat-val num" id="stat-scalp-total">47</span>
+        </div>
+      </div>
+      <div class="subheader-actions">
+        <button class="sub-btn active" id="sub-scalp-filter-all" data-filter="all">전체</button>
+        <button class="sub-btn" id="sub-scalp-filter-golden" data-filter="golden">골든크로스</button>
+        <button class="sub-btn" id="sub-scalp-filter-dip" data-filter="dip">눌림목</button>
+        <button class="sub-btn" id="sub-scalp-filter-break" data-filter="break">돌파</button>
+      </div>
+    </div>
+
+    <div class="subheader-view hidden" id="sub-swing" data-sub="swing">
+      <div class="stats-row">
+        <div class="stat-pill">
+          <span class="stat-label">활성 종목</span>
+          <span class="stat-val num" id="stat-swing-active">8</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">평균 진입강도</span>
+          <span class="stat-val accent num" id="stat-swing-strength">77%</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">전략 분포</span>
+          <span class="stat-val num">A-1/B-2</span>
+        </div>
+      </div>
+      <div class="subheader-actions">
+        <button class="sub-btn active" id="sub-swing-filter-all" data-filter="all">전체</button>
+        <button class="sub-btn" id="sub-swing-filter-a1" data-filter="a1">볼린저 밴드</button>
+        <button class="sub-btn" id="sub-swing-filter-b2" data-filter="b2">엔벨로프</button>
+        <button class="sub-btn" id="sub-swing-filter-b3" data-filter="b3">MACD</button>
+      </div>
+    </div>
+
+    <div class="subheader-view hidden" id="sub-news" data-sub="news">
+      <div class="stats-row">
+        <div class="stat-pill positive-pill">
+          <span class="dot dot-pos"></span>
+          <span class="stat-label">긍정</span>
+          <span class="stat-val num" id="stat-news-pos">14</span>
+        </div>
+        <div class="stat-pill neutral-pill">
+          <span class="dot dot-neu"></span>
+          <span class="stat-label">중립</span>
+          <span class="stat-val num" id="stat-news-neu">22</span>
+        </div>
+        <div class="stat-pill negative-pill">
+          <span class="dot dot-neg"></span>
+          <span class="stat-label">부정</span>
+          <span class="stat-val num" id="stat-news-neg">8</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">최종 업데이트</span>
+          <span class="stat-val num" id="stat-news-time">14:30:00</span>
+        </div>
+      </div>
+      <div class="subheader-actions">
+        <button class="sub-btn active" id="sub-news-filter-all" data-filter="all">전체</button>
+        <button class="sub-btn" id="sub-news-filter-pos" data-filter="positive">긍정</button>
+        <button class="sub-btn" id="sub-news-filter-neg" data-filter="negative">부정</button>
+        <button class="sub-btn" id="sub-news-filter-us" data-filter="us">미국</button>
+        <button class="sub-btn" id="sub-news-filter-cn" data-filter="china">중국</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       MAIN CONTENT — Tab Views
+  ============================================================ -->
+  <main class="main-canvas" id="main-canvas">
+
+    <!-- VIEW 1: 실시간 단타 -->
+    <section
+      class="tab-view active"
+      id="view-scalp"
+      role="tabpanel"
+      aria-labelledby="tab-btn-scalp"
+    >
+      <!-- Stock cards will be injected by JS in STEP 2 -->
+      <div class="stock-grid" id="grid-scalp">
+        <!-- Skeleton placeholders -->
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: 스윙 -->
+    <section
+      class="tab-view"
+      id="view-swing"
+      role="tabpanel"
+      aria-labelledby="tab-btn-swing"
+    >
+      <div class="stock-grid" id="grid-swing">
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+        <div class="card-skeleton"><span class="shimmer"></span></div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: 글로벌 뉴스 -->
+    <section
+      class="tab-view"
+      id="view-news"
+      role="tabpanel"
+      aria-labelledby="tab-btn-news"
+    >
+      <!-- News layout built by JS in STEP 3 -->
+      <div id="grid-news" style="height:100%">
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       DETAIL MODAL — injected/toggled by JS (STEP 4)
+  ============================================================ -->
+  <div class="modal-overlay" id="modal-overlay" aria-hidden="true">
+    <div
+      class="modal-panel"
+      id="modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-stock-name"
+    >
+      <!-- Full modal content built in STEP 4 -->
+      <div class="modal-placeholder">
+        <span class="shimmer"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TOAST AREA
+  ============================================================ -->
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

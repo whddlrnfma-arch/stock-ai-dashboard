@@ -1,157 +1,152 @@
-import sys
+import logging
 import time
-import oracledb
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QAxContainer import QAxWidget
+from cachetools import TTLCache
 
-class RateLimiter:
-    """조회 제한 방지를 위한 Rate Limiter"""
-    def __init__(self, delay=0.2):
-        self.delay = delay
-        self.last_req_time = 0.0
+# 로깅 설정 (방어적 프로그래밍의 핵심)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
-    def wait(self):
-        elapsed = time.time() - self.last_req_time
-        if elapsed < self.delay:
-            time.sleep(self.delay - elapsed)
-        self.last_req_time = time.time()
+class KiwoomLogic:
+    """
+    키움증권 실시간 단타 데이터 처리 및 진입/이탈 강도 로직을 담당하는 핵심 클래스
+    """
+    def __init__(self, db_connection=None):
+        self.db = db_connection
+        # 활성 종목을 관리하는 딕셔너리 (진입강도 70% 이상)
+        self.active_stocks = {}
+        
+        # 10분 지연(Caching) 로직을 위한 TTLCache 설정
+        # 최대 1000개 종목 수용, TTL은 600초(10분)
+        self.fade_out_cache = TTLCache(maxsize=1000, ttl=600)
+        
+        # DB 동기화를 위해 수동으로 만료 시간을 트래킹하는 보조 딕셔너리 (필요시 사용)
+        self.fade_out_timestamps = {}
 
-class KiwoomLogic(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        
-        # 키움 API OCX 연결
-        self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
-        self.kiwoom.OnEventConnect.connect(self.on_event_connect)
-        self.kiwoom.OnReceiveRealData.connect(self.on_receive_real_data)
-        
-        self.rate_limiter = RateLimiter(0.2)
-        
-        # 오라클 DB Connection Pool 설정
-        from dotenv import load_dotenv
-        import os
-        load_dotenv()
-        
-        db_ip = os.getenv("DB_IP", "127.0.0.1")
-        db_port = int(os.getenv("DB_PORT", "1521"))
-        db_sid = os.getenv("DB_SID", "XE")
-        db_user = os.getenv("DB_USER", "system")
-        db_pass = os.getenv("DB_PASS")
-
-        self.dsn = oracledb.makedsn(db_ip, db_port, sid=db_sid)
-        self.pool = oracledb.create_pool(
-            user=db_user,
-            password=db_pass,
-            dsn=self.dsn,
-            min=2,
-            max=10,
-            increment=1
-        )
-        print("✅ Oracle DB Connection Pool 생성 완료")
-        
-        # 키움 로그인 창 띄우기
-        print("키움 OpenAPI 로그인 시도 중...")
-        self.kiwoom.dynamicCall("CommConnect()")
-
-    def on_event_connect(self, err_code):
-        if err_code == 0:
-            print("✅ 키움 OpenAPI 로그인 성공!")
-            
-            # 자동 매매/조회 시 매번 계좌 비밀번호를 입력하지 않도록 
-            # KOA_Functions("ShowAccountWindow")를 호출해 '계좌비밀번호 저장' 창을 띄웁니다.
-            # (최초 1회 설정하면 이후로는 묻지 않고 바로 패스됩니다)
-            self.kiwoom.dynamicCall("KOA_Functions(QString, QString)", "ShowAccountWindow", "")
-            
-            self.start_realtime_monitoring()
-        else:
-            print(f"❌ 키움 API 연결 실패 (에러코드: {err_code})")
-            
-    def get_stock_list(self):
-        # 0: 코스피, 10: 코스닥
-        kospi = self.kiwoom.dynamicCall("GetCodeListByMarket(QString)", ["0"]).split(';')
-        kosdaq = self.kiwoom.dynamicCall("GetCodeListByMarket(QString)", ["10"]).split(';')
-        return [code for code in (kospi + kosdaq) if code.strip() != '']
-        
-    def start_realtime_monitoring(self):
-        print("전 종목 정보 로딩 중...")
-        self.rate_limiter.wait()
-        stock_list = self.get_stock_list()
-        print(f"총 실시간 감시 대상 종목 수: {len(stock_list)}개")
-        
-        # 100개씩 나눠서 SetRealReg(실시간 등록) 수행
-        chunk_size = 100
-        for i in range(0, len(stock_list), chunk_size):
-            chunk = stock_list[i:i+chunk_size]
-            code_list_str = ";".join(chunk)
-            screen_no = str(1000 + (i // chunk_size))
-            
-            self.rate_limiter.wait()
-            # 실시간 등록 (FID: 10=현재가, 12=등락율, 20=체결시간)
-            # 최초 등록(i==0)은 '0', 이후 등록은 '1'(추가 등록)
-            opt_type = "0" if i == 0 else "1"
-            res = self.kiwoom.dynamicCall(
-                "SetRealReg(QString, QString, QString, QString)", 
-                screen_no, code_list_str, "10;12;20", opt_type
-            )
-            
-        print("🚀 전 종목 실시간 시세 수신 등록 완료!")
-
-    def on_receive_real_data(self, code, real_type, real_data):
-        if real_type == "주식체결":
-            # GetCommRealData로 데이터 추출
-            price_str = self.kiwoom.dynamicCall("GetCommRealData(QString, int)", code, 10).strip()
-            change_rate_str = self.kiwoom.dynamicCall("GetCommRealData(QString, int)", code, 12).strip()
-            
-            if not price_str:
-                return
-                
-            price = abs(int(price_str))
-            
-            # DB 부하를 줄이기 위해 로컬 딕셔너리로 관리하는 방법도 있으나,
-            # '수신된 데이터를 오라클 DB에 즉시 업데이트' 요구사항에 맞춰 바로 UPSERT
-            name = self.kiwoom.dynamicCall("GetMasterCodeName(QString)", [code]).strip()
-            
-            # [2차 필터링 방어 로직] 1. 이름 기반 필터링
-            invalid_names = ['ETF', 'ETN', '스팩', 'KODEX', 'TIGER', 'ACE', 'KBSTAR']
-            if any(keyword in name for keyword in invalid_names) or name.endswith('우') or name.endswith('우B'):
-                return
-                
-            # [2차 필터링 방어 로직] 2. 상태 기반 필터링
-            state = self.kiwoom.dynamicCall("GetMasterStockState(QString)", [code])
-            invalid_states = ['관리종목', '환기종목', '거래정지', '상장폐지', '투자경고', '투자위험']
-            if any(keyword in state for keyword in invalid_states):
-                return
-                
-            notes = f"등락률: {change_rate_str}%"
-            
-            self.update_db(code, name, price, notes)
-            
-    def update_db(self, code, name, price, notes):
+    def calculate_entry_strength(self, real_time_data: dict) -> float:
+        """
+        [목업] 실시간 데이터를 바탕으로 진입강도를 계산 (0~100%)
+        """
         try:
-            with self.pool.acquire() as conn:
-                with conn.cursor() as cursor:
-                    # MERGE INTO를 사용해 종목코드가 있으면 UPDATE, 없으면 INSERT (UPSERT)
-                    sql = """
-                    MERGE INTO TRADING_TARGETS t
-                    USING (SELECT :code AS CODE, :name AS NAME, :price AS PRICE, :notes AS NOTES FROM DUAL) s
-                    ON (t.SYMBOL_CODE = s.CODE)
-                    WHEN MATCHED THEN
-                        UPDATE SET 
-                            DETECT_TIME = SYSTIMESTAMP,
-                            DETECT_PRICE = s.PRICE,
-                            NOTES = s.NOTES,
-                            SYMBOL_NAME = s.NAME,
-                            STRATEGY_CODE = 'REALTIME'
-                    WHEN NOT MATCHED THEN
-                        INSERT (SYMBOL_CODE, SYMBOL_NAME, STRATEGY_CODE, DETECT_PRICE, NOTES)
-                        VALUES (s.CODE, s.NAME, 'REALTIME', s.PRICE, s.NOTES)
-                    """
-                    cursor.execute(sql, {"code": code, "name": name, "price": price, "notes": notes})
-                conn.commit()
-        except Exception as e:
-            print(f"❌ DB Update Error ({code} {name}): {e}")
+            # KeyError, ValueError 등을 방지하기 위한 안전한 데이터 파싱
+            volume = float(real_time_data.get('volume', 0))
+            price_change_rate = float(real_time_data.get('change_rate', 0.0))
+            power = float(real_time_data.get('power', 0.0)) # 체결강도 등
+            
+            # 단순화된 가상의 진입강도 산출 로직
+            base_score = (price_change_rate * 3) + (power * 0.5) + (volume / 100000)
+            strength = min(max(base_score, 0.0), 100.0)
+            
+            return round(strength, 2)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    logic = KiwoomLogic()
-    sys.exit(app.exec_())
+        except (ValueError, TypeError) as e:
+            logger.error(f"진입강도 계산 중 데이터 타입 에러 발생: {e} | 데이터: {real_time_data}")
+            return 0.0
+        except Exception as e:
+            logger.error(f"진입강도 계산 중 알 수 없는 에러 발생: {e}")
+            return 0.0
+
+    def process_realtime_tick(self, stock_code: str, tick_data: dict):
+        """
+        실시간 틱 데이터가 들어올 때마다 호출되는 메인 파이프라인
+        """
+        if not stock_code or not isinstance(tick_data, dict):
+            logger.warning(f"잘못된 형식의 틱 데이터 수신. stock_code: {stock_code}")
+            return
+
+        try:
+            # 1. 진입강도 계산
+            strength = self.calculate_entry_strength(tick_data)
+            tick_data['strength'] = strength
+
+            # 2. 조건 만족 판별 및 상태 전이
+            if strength >= 70.0:
+                self._handle_active_state(stock_code, tick_data, strength)
+            else:
+                self._handle_fade_out_state(stock_code, strength)
+
+        except KeyError as e:
+            logger.error(f"[{stock_code}] 틱 데이터 파싱 중 필수 키 누락: {e}")
+        except Exception as e:
+            logger.error(f"[{stock_code}] 실시간 틱 처리 중 치명적 에러 발생: {e}")
+
+    def _handle_active_state(self, stock_code: str, data: dict, strength: float):
+        """
+        진입강도가 70% 이상인 '활성' 상태 종목의 처리 로직
+        """
+        try:
+            # 기존에 10분 이탈 대기 중(CACHED)이었다면 캐시에서 즉시 복귀 (재진입)
+            if stock_code in self.fade_out_cache:
+                del self.fade_out_cache[stock_code]
+                if stock_code in self.fade_out_timestamps:
+                    del self.fade_out_timestamps[stock_code]
+                logger.info(f"[{stock_code}] 진입강도 회복 ({strength}%). CACHED 해제 및 활성 상태 복귀.")
+                
+                # DB Status 'ACTIVE'로 업데이트 (Mock)
+                if self.db:
+                    pass # self.db.update_status(stock_code, 'ACTIVE')
+
+            # 활성 상태 유지 및 데이터 업데이트
+            self.active_stocks[stock_code] = data
+            
+            # DB 실시간 Insert / Update (Mock)
+            if self.db:
+                pass # self.db.upsert_stock_data(stock_code, data)
+                
+        except Exception as e:
+            logger.error(f"[{stock_code}] 활성 상태 처리 중 에러: {e}")
+
+    def _handle_fade_out_state(self, stock_code: str, strength: float):
+        """
+        진입강도가 70% 미만으로 떨어진 '조건식 이탈 대기' 상태 종목의 처리 로직
+        """
+        try:
+            # 활성 목록에 있었다면 제거
+            if stock_code in self.active_stocks:
+                del self.active_stocks[stock_code]
+                logger.info(f"[{stock_code}] 진입강도 하락 ({strength}%). 조건식 이탈, 10분 카운트다운 시작.")
+
+            # 이미 캐시에 들어있지 않다면 신규 캐싱 처리
+            if stock_code not in self.fade_out_cache:
+                current_time = time.time()
+                # TTLCache에 등록 (10분 후 자동 접근 불가)
+                self.fade_out_cache[stock_code] = current_time
+                # 백그라운드 DB 삭제 루프를 위한 타임스탬프 기록
+                self.fade_out_timestamps[stock_code] = current_time
+                
+                # DB Status를 즉시 삭제하지 않고 'CACHED'로 업데이트 (Mock)
+                if self.db:
+                    pass # self.db.update_status(stock_code, 'CACHED')
+                    
+        except Exception as e:
+            logger.error(f"[{stock_code}] 이탈 대기 상태 처리 중 에러: {e}")
+
+    def run_db_cleanup_loop(self):
+        """
+        주기적으로(예: 1분마다) 호출되어 10분이 지나 완전히 만료된 종목을 DB에서 최종 삭제하는 루프
+        """
+        try:
+            current_time = time.time()
+            expired_codes = []
+
+            for code, cached_time in list(self.fade_out_timestamps.items()):
+                # 600초(10분) 경과 체크
+                if current_time - cached_time >= 600:
+                    expired_codes.append(code)
+
+            for code in expired_codes:
+                logger.info(f"[{code}] 10분 지연 이탈 시간 초과. DB에서 영구 삭제 진행.")
+                # DB Delete (Mock)
+                if self.db:
+                    pass # self.db.delete_stock(code)
+                
+                # 타임스탬프 정리 (TTLCache에서는 이미 알아서 만료되어 삭제됨)
+                del self.fade_out_timestamps[code]
+
+        except Exception as e:
+            logger.error(f"DB 정리 루프 실행 중 에러 발생: {e}")
+

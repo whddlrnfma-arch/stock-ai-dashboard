@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="퀀트 주식 자동매매 터미널 - 실시간 단타 및 스윙 전략 대시보드" />
+  <title>QuantTerminal — 자동매매 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =============================================
+       TOP HEADER BAR
+  ============================================== -->
+  <header class="app-header" id="app-header">
+    <div class="header-left">
+      <div class="app-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">QuantTerminal</span>
+      </div>
+      <div class="header-status">
+        <span class="status-dot status-live"></span>
+        <span class="status-label">실시간 연결</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <!-- Market Index Tickers -->
+      <div class="market-tickers" id="market-tickers">
+        <div class="ticker-item">
+          <span class="ticker-name">KOSPI</span>
+          <span class="ticker-value rise" id="kospi-val">2,587.43</span>
+          <span class="ticker-change rise" id="kospi-chg">+12.31 (+0.48%)</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-item">
+          <span class="ticker-name">KOSDAQ</span>
+          <span class="ticker-value fall" id="kosdaq-val">748.12</span>
+          <span class="ticker-change fall" id="kosdaq-chg">-3.67 (-0.49%)</span>
+        </div>
+        <div class="ticker-divider"></div>
+        <div class="ticker-item">
+          <span class="ticker-name">USD/KRW</span>
+          <span class="ticker-value rise" id="usd-val">1,384.50</span>
+          <span class="ticker-change rise" id="usd-chg">+2.10 (+0.15%)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="header-time" id="header-time">
+        <span class="time-display" id="current-time">--:--:--</span>
+        <span class="time-label">KST</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-settings" title="설정" aria-label="설정">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-notify" title="알림" aria-label="알림">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notify-badge">3</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =============================================
+       MAIN APP WRAPPER
+  ============================================== -->
+  <main class="app-main" id="app-main">
+
+    <!-- LEFT COLUMN -->
+    <section class="col-left" id="col-left" aria-label="종목 리스트">
+
+      <!-- Segmented Tab Control -->
+      <div class="tab-control-wrapper" id="tab-control-wrapper">
+        <div class="segmented-control" id="segmented-control" role="tablist">
+          <div class="segment-slider" id="segment-slider" aria-hidden="true"></div>
+          <button class="segment-btn active" id="tab-scalp" role="tab" aria-selected="true" aria-controls="panel-scalp" data-tab="scalp">
+            <span class="segment-icon">⚡️</span>
+            <span class="segment-label">실시간 단타</span>
+          </button>
+          <button class="segment-btn" id="tab-swing" role="tab" aria-selected="false" aria-controls="panel-swing" data-tab="swing">
+            <span class="segment-icon">🌊</span>
+            <span class="segment-label">스윙</span>
+          </button>
+        </div>
+
+        <!-- Summary Stats Strip -->
+        <div class="stats-strip" id="stats-strip">
+          <div class="stat-chip">
+            <span class="stat-chip-label">활성 종목</span>
+            <span class="stat-chip-value" id="stat-active">12</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-chip-label">평균 진입강도</span>
+            <span class="stat-chip-value accent" id="stat-avg-strength">84%</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-chip-label">이탈 대기</span>
+            <span class="stat-chip-value warn" id="stat-fadeout">2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Panel: 실시간 단타 -->
+      <div class="tab-panel active" id="panel-scalp" role="tabpanel" aria-labelledby="tab-scalp">
+        <div class="stock-list" id="stock-list-scalp">
+          <!-- Stock cards injected by JS (STEP 2) -->
+          <div class="stock-card-placeholder">
+            <div class="placeholder-shimmer"></div>
+          </div>
+          <div class="stock-card-placeholder">
+            <div class="placeholder-shimmer"></div>
+          </div>
+          <div class="stock-card-placeholder">
+            <div class="placeholder-shimmer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Panel: 스윙 -->
+      <div class="tab-panel" id="panel-swing" role="tabpanel" aria-labelledby="tab-swing">
+        <div class="stock-list" id="stock-list-swing">
+          <!-- Stock cards injected by JS (STEP 2) -->
+          <div class="stock-card-placeholder">
+            <div class="placeholder-shimmer"></div>
+          </div>
+          <div class="stock-card-placeholder">
+            <div class="placeholder-shimmer"></div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /col-left -->
+
+    <!-- RIGHT COLUMN -->
+    <aside class="col-right" id="col-right" aria-label="글로벌 뉴스 및 인디케이터">
+
+      <!-- Market Macro Indicators Panel -->
+      <div class="panel" id="panel-indicators">
+        <div class="panel-header">
+          <h2 class="panel-title">매크로 인디케이터</h2>
+          <span class="panel-badge">실시간</span>
+        </div>
+        <div class="indicator-grid" id="indicator-grid">
+          <!-- Indicators injected by JS (STEP 3) -->
+          <div class="indicator-card-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="indicator-card-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="indicator-card-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="indicator-card-placeholder"><div class="placeholder-shimmer"></div></div>
+        </div>
+      </div>
+
+      <!-- Global News Ticker Panel -->
+      <div class="panel panel-news" id="panel-news">
+        <div class="panel-header">
+          <h2 class="panel-title">글로벌 뉴스</h2>
+          <button class="panel-refresh-btn" id="btn-refresh-news" aria-label="뉴스 새로고침">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
+        </div>
+        <div class="news-list" id="news-list">
+          <!-- News items injected by JS (STEP 3) -->
+          <div class="news-item-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="news-item-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="news-item-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="news-item-placeholder"><div class="placeholder-shimmer"></div></div>
+          <div class="news-item-placeholder"><div class="placeholder-shimmer"></div></div>
+        </div>
+      </div>
+
+    </aside><!-- /col-right -->
+
+  </main><!-- /app-main -->
+
+  <!-- =============================================
+       DETAIL MODAL (injected/toggled by JS)
+  ============================================== -->
+  <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true">
+    <div class="modal-container" id="modal-container" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <!-- Modal content will be injected in STEP 4 -->
+      <div class="modal-inner-placeholder">
+        <div class="placeholder-shimmer" style="height: 100%; border-radius: 20px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================================
+       TOAST NOTIFICATION AREA
+  ============================================== -->
+  <div class="toast-area" id="toast-area" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

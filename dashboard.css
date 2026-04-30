@@ -1,0 +1,2059 @@
+/* ================================================================
+   QuantTerminal Pro — dashboard.css
+   STEP 1: Design Tokens · Reset · Header · Magic Tab · Layout
+================================================================ */
+
+/* ── 1. DESIGN TOKENS (:root) ──────────────────────────────── */
+:root {
+  /* Typography */
+  --font:          'Inter', 'Noto Sans KR', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:     'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  --text-xs:  11px; --text-sm: 12px; --text-base: 14px;
+  --text-md:  16px; --text-lg: 18px; --text-xl:   20px;
+  --text-2xl: 24px; --text-3xl: 28px;
+
+  --fw-light:   300; --fw-regular: 400; --fw-medium:  500;
+  --fw-semi:    600; --fw-bold:    700; --fw-heavy:   800; --fw-black: 900;
+
+  /* Color Palette */
+  --bg:          #F5F5F7;
+  --bg-card:     rgba(255,255,255,0.70);
+  --bg-card-s:   #FFFFFF;
+  --bg-header:   rgba(245,245,247,0.88);
+  --bg-subhdr:   rgba(255,255,255,0.60);
+  --bg-hover:    rgba(0,0,0,0.035);
+  --bg-active:   rgba(0,0,0,0.06);
+
+  --text-pri:    #1D1D1F;
+  --text-sec:    #86868B;
+  --text-ter:    #AEAEB2;
+  --text-inv:    #FFFFFF;
+
+  --rise:        #FF3B30;
+  --fall:        #007AFF;
+  --neutral:     #86868B;
+  --accent:      #0071E3;
+  --accent2:     #5E5CE6;
+  --positive:    #34C759;
+  --caution:     #FF9F0A;
+  --negative:    #FF3B30;
+
+  /* Badge tokens */
+  --badge-gold-bg: rgba(255,204,0,.14);  --badge-gold-fg: #9A6C00;
+  --badge-dip-bg:  rgba(52,199,89,.13);  --badge-dip-fg:  #1A7D3A;
+  --badge-brk-bg:  rgba(0,113,227,.12);  --badge-brk-fg:  #0050A0;
+  --badge-vol-bg:  rgba(94,92,230,.12);  --badge-vol-fg:  #3B39A0;
+
+  /* Spacing */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px;
+  --s6:24px; --s8:32px; --s10:40px;
+
+  /* Sizing */
+  --header-h:   56px;
+  --subhdr-h:   48px;
+  --canvas-top: calc(var(--header-h) + var(--subhdr-h));
+
+  /* Radii */
+  --r-sm:  8px; --r-md: 12px; --r-lg: 16px;
+  --r-xl: 20px; --r-pill: 999px;
+
+  /* Shadows */
+  --sh-card:  0 4px 20px rgba(0,0,0,.04), 0 1px 4px rgba(0,0,0,.04);
+  --sh-hover: 0 10px 30px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+  --sh-modal: 0 40px 100px rgba(0,0,0,.22), 0 8px 24px rgba(0,0,0,.10);
+  --sh-hdr:   0 1px 0 rgba(0,0,0,.08);
+
+  /* Glass */
+  --blur-sm: blur(10px); --blur-md: blur(20px); --blur-lg: blur(40px);
+  --border-g: 1px solid rgba(255,255,255,.55);
+  --border-d: 1px solid rgba(0,0,0,.07);
+
+  /* Motion */
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-out:    cubic-bezier(.16,1,.3,1);
+  --ease-smooth: cubic-bezier(.25,.46,.45,.94);
+  --dur-fast: 120ms; --dur-norm: 220ms; --dur-slow: 360ms; --dur-modal: 300ms;
+
+  /* Z-index */
+  --z-sub: 90; --z-hdr: 100; --z-overlay: 800; --z-modal: 900; --z-toast: 1000;
+}
+
+/* ── 2. RESET ───────────────────────────────────────────────── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+body {
+  font-family: var(--font);
+  font-size:   var(--text-base);
+  color:       var(--text-pri);
+  background:  var(--bg);
+  height:      100vh;
+  overflow:    hidden;
+  display:     flex;
+  flex-direction: column;
+  user-select: none;
+}
+button { font-family:var(--font); cursor:pointer; border:none; background:none; outline:none; }
+button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:var(--r-sm); }
+
+/* Tabular nums helper */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+.rise    { color: var(--rise)     !important; }
+.fall    { color: var(--fall)     !important; }
+.accent  { color: var(--accent)   !important; }
+.warn    { color: var(--caution)  !important; }
+.hidden  { display: none !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar            { width:5px; height:5px; }
+::-webkit-scrollbar-track      { background:transparent; }
+::-webkit-scrollbar-thumb      { background:rgba(0,0,0,.15); border-radius:99px; }
+::-webkit-scrollbar-thumb:hover{ background:rgba(0,0,0,.28); }
+
+/* ── 3. HEADER ─────────────────────────────────────────────── */
+.header {
+  position: fixed; top:0; left:0; right:0;
+  height:      var(--header-h);
+  display:     flex;
+  align-items: center;
+  padding:     0 var(--s5);
+  gap:         var(--s4);
+  background:  var(--bg-header);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-bottom: var(--border-d);
+  box-shadow:  var(--sh-hdr);
+  z-index:     var(--z-hdr);
+}
+
+.header-section { display:flex; align-items:center; gap:var(--s4); }
+.header-left  { flex-shrink:0; gap:var(--s4); }
+.header-center{ flex:1; justify-content:center; }
+.header-right { flex-shrink:0; gap:var(--s3); }
+
+/* Logo */
+.logo { display:flex; align-items:center; gap:var(--s2); text-decoration:none; }
+.logo-mark {
+  width:30px; height:30px; border-radius:var(--r-sm);
+  background: linear-gradient(135deg,#0071E3 0%,#5E5CE6 100%);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 2px 8px rgba(0,113,227,.30);
+}
+.logo-mark svg { display:block; }
+.logo-mark path { fill: #fff; }
+.logo-text {
+  font-size: var(--text-md); font-weight:var(--fw-bold);
+  color: var(--text-pri); letter-spacing:-.3px;
+}
+.logo-version {
+  font-size:var(--text-xs); font-weight:var(--fw-semi);
+  color:var(--accent); background:rgba(0,113,227,.10);
+  padding:2px 7px; border-radius:var(--r-pill);
+}
+
+/* Connection status */
+.connection-status {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(52,199,89,.10); padding:3px 10px;
+  border-radius:var(--r-pill);
+}
+.status-pulse {
+  width:7px; height:7px; border-radius:50%; background:var(--positive);
+  box-shadow:0 0 0 0 rgba(52,199,89,.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 0   rgba(52,199,89,.5); }
+  50%      { box-shadow:0 0 0 5px rgba(52,199,89,.0); }
+}
+.status-text { font-size:var(--text-sm); font-weight:var(--fw-medium); color:#1A7D3A; }
+
+/* Market indices */
+.market-indices { display:flex; align-items:center; gap:var(--s4); }
+.index-item { display:flex; align-items:baseline; gap:5px; }
+.index-name { font-size:var(--text-sm); font-weight:var(--fw-medium); color:var(--text-sec); }
+.index-val  { font-size:var(--text-base); font-weight:var(--fw-semi); }
+.index-chg  { font-size:var(--text-xs); font-weight:var(--fw-regular); }
+.index-sep  { width:1px; height:14px; background:rgba(0,0,0,.10); border-radius:1px; }
+
+/* Clock */
+.header-clock { display:flex; align-items:baseline; gap:4px; }
+.clock-display { font-size:var(--text-md); font-weight:var(--fw-semi); color:var(--text-pri); letter-spacing:.4px; }
+.clock-tz      { font-size:var(--text-xs); font-weight:var(--fw-medium); color:var(--text-sec); }
+
+/* Header icon buttons */
+.header-actions { display:flex; gap:2px; }
+.hdr-icon-btn {
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:var(--r-md); color:var(--text-sec);
+  transition: background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth);
+}
+.hdr-icon-btn:hover  { background:var(--bg-hover); color:var(--text-pri); }
+.hdr-icon-btn:active { background:var(--bg-active); transform:scale(.95); }
+.badge-dot {
+  position:absolute; top:5px; right:5px;
+  width:15px; height:15px; border-radius:50%;
+  background:var(--rise); color:#fff;
+  font-size:9px; font-weight:var(--fw-bold);
+  display:flex; align-items:center; justify-content:center;
+  border:1.5px solid var(--bg);
+}
+
+/* ── 4. MAGIC TAB NAVIGATION ────────────────────────────────── */
+.magic-tab-nav {
+  position:   relative;
+  display:    flex;
+  align-items: center;
+  gap:        2px;
+  background: rgba(0,0,0,.06);
+  border-radius: var(--r-md);
+  padding:    3px;
+}
+
+/* The sliding pill — position & width driven by JS */
+.tab-indicator {
+  position:      absolute;
+  top:           3px;
+  left:          3px;
+  height:        calc(100% - 6px);
+  border-radius: calc(var(--r-md) - 2px);
+  background:    var(--bg-card-s);
+  box-shadow:    0 2px 8px rgba(0,0,0,.10);
+  transition:    transform var(--dur-norm) var(--ease-spring),
+                 width    var(--dur-norm) var(--ease-spring);
+  pointer-events: none;
+  will-change:   transform, width;
+}
+
+.tab-btn {
+  position:   relative;
+  display:    flex;
+  align-items:center;
+  gap:        6px;
+  height:     38px;
+  padding:    0 var(--s4);
+  border-radius: calc(var(--r-md) - 2px);
+  font-size:  var(--text-sm);
+  font-weight: var(--fw-medium);
+  color:      var(--text-sec);
+  white-space: nowrap;
+  z-index:    1;
+  transition: color var(--dur-norm) var(--ease-smooth);
+}
+.tab-btn.active {
+  color:       var(--text-pri);
+  font-weight: var(--fw-semi);
+}
+.tab-icon { font-size:14px; line-height:1; }
+
+/* ── 5. SUBHEADER ───────────────────────────────────────────── */
+.subheader {
+  position: fixed;
+  top: var(--header-h); left:0; right:0;
+  height:     var(--subhdr-h);
+  display:    flex;
+  align-items: center;
+  background: var(--bg-subhdr);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border-bottom: var(--border-d);
+  z-index:    var(--z-sub);
+  padding:    0 var(--s5);
+  overflow:   hidden;
+}
+
+.subheader-view {
+  width:100%; display:flex; align-items:center;
+  justify-content:space-between; gap:var(--s4);
+  animation: fadein var(--dur-norm) var(--ease-out);
+}
+@keyframes fadein { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:none;} }
+
+.stats-row { display:flex; align-items:center; gap:var(--s2); }
+
+.stat-pill {
+  display:flex; align-items:center; gap:5px;
+  background:var(--bg-card); border:var(--border-d);
+  border-radius:var(--r-pill); padding:4px 12px;
+  backdrop-filter:var(--blur-sm); -webkit-backdrop-filter:var(--blur-sm);
+}
+.warn-pill     { background:rgba(255,159,10,.08); border-color:rgba(255,159,10,.20); }
+.positive-pill { background:rgba(52,199,89,.08);  border-color:rgba(52,199,89,.20);  }
+.neutral-pill  { background:rgba(134,134,139,.08);border-color:rgba(134,134,139,.20);}
+.negative-pill { background:rgba(255,59,48,.08);  border-color:rgba(255,59,48,.20);  }
+
+.stat-label { font-size:var(--text-xs); font-weight:var(--fw-medium); color:var(--text-sec); }
+.stat-val   { font-size:var(--text-sm); font-weight:var(--fw-bold);   color:var(--text-pri); }
+
+/* Sentiment dots */
+.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dot-pos { background:var(--positive); }
+.dot-neu { background:var(--neutral);  }
+.dot-neg { background:var(--negative); }
+
+/* Subheader filter buttons */
+.subheader-actions { display:flex; gap:var(--s1); }
+.sub-btn {
+  height:28px; padding:0 12px; border-radius:var(--r-pill);
+  font-size:var(--text-xs); font-weight:var(--fw-medium); color:var(--text-sec);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.sub-btn:hover  { background:var(--bg-hover); color:var(--text-pri); }
+.sub-btn.active {
+  background:var(--text-pri); color:var(--text-inv);
+  font-weight:var(--fw-semi);
+}
+
+/* ── 6. MAIN CANVAS ─────────────────────────────────────────── */
+.main-canvas {
+  margin-top:  var(--canvas-top);
+  flex:        1;
+  overflow:    hidden;
+  position:    relative;
+}
+
+/* Tab Views */
+.tab-view {
+  position:   absolute;
+  inset:      0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding:    var(--s5);
+  opacity:    0;
+  pointer-events: none;
+  transform:  translateY(6px);
+  transition: opacity  var(--dur-norm) var(--ease-out),
+              transform var(--dur-norm) var(--ease-out);
+}
+.tab-view.active {
+  opacity:        1;
+  pointer-events: all;
+  transform:      translateY(0);
+}
+
+/* Stock Grid (responsive — STEP 2 will fill content) */
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--s4);
+  padding-bottom: var(--s8);
+}
+
+/* News Grid (STEP 3 will style content) */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--s4);
+  padding-bottom: var(--s8);
+}
+.news-sk-featured { grid-column: span 2; height:220px !important; }
+
+/* ── 7. SKELETON LOADERS ────────────────────────────────────── */
+.card-skeleton {
+  border-radius: var(--r-lg);
+  height:        130px;
+  overflow:      hidden;
+  background:    rgba(0,0,0,.04);
+}
+.shimmer {
+  display:     block;
+  width:       100%;
+  height:      100%;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.04)  0%,
+    rgba(0,0,0,.08) 40%,
+    rgba(0,0,0,.04) 80%
+  );
+  background-size: 200% 100%;
+  animation:   shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from { background-position:  200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ── 8. MODAL BASE ──────────────────────────────────────────── */
+.modal-overlay {
+  position:   fixed; inset:0;
+  background: rgba(0,0,0,.28);
+  backdrop-filter:var(--blur-sm);
+  -webkit-backdrop-filter:var(--blur-sm);
+  z-index:    var(--z-overlay);
+  display:    flex; align-items:center; justify-content:center;
+  opacity:    0; pointer-events:none;
+  transition: opacity var(--dur-modal) var(--ease-smooth);
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.modal-panel {
+  width:   min(92vw,1060px);
+  height:  min(88vh,720px);
+  background: rgba(255,255,255,.82);
+  backdrop-filter:var(--blur-lg);
+  -webkit-backdrop-filter:var(--blur-lg);
+  border:  var(--border-g);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-modal);
+  overflow: hidden;
+  transform: scale(.95) translateY(10px);
+  transition: transform var(--dur-modal) var(--ease-out),
+              opacity   var(--dur-modal) var(--ease-smooth);
+  opacity: 0;
+}
+.modal-overlay.open .modal-panel {
+  transform: scale(1) translateY(0);
+  opacity:   1;
+}
+.modal-placeholder { width:100%; height:100%; }
+.modal-placeholder .shimmer { border-radius:var(--r-xl); }
+
+/* ── 9. TOAST ───────────────────────────────────────────────── */
+.toast-container {
+  position:fixed; bottom:var(--s5); right:var(--s5);
+  display:flex; flex-direction:column-reverse; gap:var(--s2);
+  z-index:var(--z-toast); pointer-events:none;
+}
+.toast {
+  display:flex; align-items:center; gap:var(--s3);
+  min-width:220px; max-width:340px;
+  background:var(--bg-card);
+  backdrop-filter:var(--blur-md); -webkit-backdrop-filter:var(--blur-md);
+  border:var(--border-d); border-radius:var(--r-lg);
+  padding:var(--s3) var(--s5); box-shadow:var(--sh-card);
+  font-size:var(--text-sm); font-weight:var(--fw-medium); color:var(--text-pri);
+  pointer-events:all;
+  animation: toast-in var(--dur-slow) var(--ease-spring) forwards;
+}
+.toast.removing { animation:toast-out var(--dur-norm) var(--ease-smooth) forwards; }
+@keyframes toast-in  { from{opacity:0;transform:translateY(12px) scale(.96);} to{opacity:1;transform:none;} }
+@keyframes toast-out { from{opacity:1;transform:none;} to{opacity:0;transform:translateY(-6px) scale(.97);} }
+
+/* ── 10. FADE-OUT STATE (10분 이탈 대기) ─────────────────────── */
+.stock-card.fade-out {
+  opacity:  0.50;
+  transform: scale(.98);
+  filter:   saturate(.35);
+  transition: opacity  var(--dur-slow) var(--ease-smooth),
+              transform var(--dur-slow) var(--ease-smooth),
+              filter    var(--dur-slow) var(--ease-smooth);
+}
+
+/* ── 11. RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width:900px) {
+  .market-indices { display:none; }
+  .stock-grid, .news-grid { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+}
+@media (max-width:600px) {
+  .tab-label { display:none; }
+  .tab-btn   { padding: 0 var(--s3); }
+  .news-sk-featured { grid-column:span 1; }
+}
+
+
+/* ================================================================
+   STEP 2 — STOCK CARD SYSTEM
+================================================================ */
+
+/* ── Grid: fluid, no-jump reflow ────────────────────────────── */
+/*
+   minmax(300px, 1fr) + auto-fill = 카드가 자연스럽게 흘러들어가며
+   뚝뚝 끊기는 재배치 없이 열 수가 점진적으로 변함.
+   gap은 --s4(16px)로 여백 일정 유지.
+*/
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap:  var(--s4);
+  align-items: start;         /* 카드 높이가 달라도 상단 정렬 */
+  padding-bottom: var(--s8);
+}
+
+/* ── Card Base ──────────────────────────────────────────────── */
+.stock-card {
+  position:   relative;
+  display:    grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 148px;
+  padding:    var(--s4) var(--s5);
+  gap:        var(--s3);
+
+  background:      var(--bg-card);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border:          var(--border-d);
+  border-radius:   var(--r-lg);
+  box-shadow:      var(--sh-card);
+  cursor:          pointer;
+  overflow:        hidden;
+
+  /* ── Apple 'Squircle Depth' hover physics ──────────────────
+     1단계: 기본 상태 — 그림자 얇음, 위치 원점.
+     transition은 세 가지 속성을 각각 다른 타이밍으로 지정.
+       - transform:  가장 빠르게(220ms), spring으로 튀어오름
+       - box-shadow: 살짝 느리게(300ms), 그림자가 깊어지는 질감
+       - border-color: 빠르게(150ms), 유리 테두리 밝아짐
+  ────────────────────────────────────────────────────────── */
+  transition:
+    transform    220ms cubic-bezier(.34, 1.56, .64, 1),
+    box-shadow   300ms cubic-bezier(.25, .46, .45, .94),
+    border-color 150ms ease,
+    opacity      var(--dur-slow) var(--ease-smooth),
+    filter       var(--dur-slow) var(--ease-smooth);
+
+  will-change: transform, box-shadow;
+}
+
+/* ── Apple 'Squircle Depth' — Hover state ───────────────────
+   translateY(-5px): 5px 부유, scale(1.012): 미세한 확대로 '튀어오름'
+   cubic-bezier(.34,1.56,.64,1) = 약간 오버슛(1.56) 후 안착 → 쫀득한 물리감
+────────────────────────────────────────────────────────── */
+.stock-card:hover {
+  transform:    translateY(-5px) scale(1.012);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.10),
+    0 4px  12px rgba(0,0,0,.06),
+    0 1px   3px rgba(0,0,0,.04);
+  border-color: rgba(255,255,255,.80);
+  z-index: var(--z-card, 10);
+}
+
+/* Active(클릭) state — 살짝 눌리는 압감 */
+.stock-card:active {
+  transform:  translateY(-2px) scale(1.005);
+  box-shadow: var(--sh-card);
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+/* Subtle top accent line — 호버 시 나타남 */
+.stock-card::before {
+  content: '';
+  position: absolute; top:0; left: var(--s5); right: var(--s5);
+  height:  2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,113,227,.4), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.stock-card:hover::before { opacity: 1; }
+
+/* ── Row 1: Card Top ────────────────────────────────────────── */
+.card-top {
+  display:         flex;
+  align-items:     flex-start;
+  justify-content: space-between;
+  gap:             var(--s2);
+}
+
+.card-name-block {
+  display:    flex;
+  flex-direction: column;
+  gap:        2px;
+  min-width:  0;
+}
+
+.card-name {
+  font-size:   var(--text-lg);
+  font-weight: var(--fw-bold);
+  color:       var(--text-pri);
+  letter-spacing: -.3px;
+  white-space: nowrap;
+  overflow:    hidden;
+  text-overflow: ellipsis;
+}
+
+.card-code {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-sec);
+  letter-spacing: .3px;
+}
+
+/* ── Badge (top-right) ──────────────────────────────────────── */
+.card-badge {
+  flex-shrink: 0;
+  display:     inline-flex;
+  align-items: center;
+  gap:         4px;
+  height:      22px;
+  padding:     0 9px;
+  border-radius: var(--r-pill);
+  font-size:   10px;
+  font-weight: var(--fw-semi);
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+/* Badge color variants */
+.badge-golden { background:var(--badge-gold-bg); color:var(--badge-gold-fg); }
+.badge-dip    { background:var(--badge-dip-bg);  color:var(--badge-dip-fg);  }
+.badge-break  { background:var(--badge-brk-bg);  color:var(--badge-brk-fg);  }
+.badge-vol    { background:var(--badge-vol-bg);   color:var(--badge-vol-fg);  }
+.badge-macd   { background:rgba(255,159,10,.12);  color:#9A5800;              }
+.badge-bband  { background:rgba(255,59,48,.10);   color:#C0221A;              }
+.badge-env    { background:rgba(94,92,230,.12);   color:#3B39A0;              }
+
+/* ── Row 2: Spacer (strategy sub-label) ─────────────────────── */
+.card-strategy {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  letter-spacing: .1px;
+}
+
+/* ── Row 3: Card Bottom ─────────────────────────────────────── */
+.card-bottom {
+  display:         flex;
+  align-items:     flex-end;
+  justify-content: space-between;
+  gap:             var(--s3);
+}
+
+/* Price block */
+.card-price-block {
+  display:    flex;
+  flex-direction: column;
+  gap:        2px;
+}
+
+.card-price {
+  font-size:   var(--text-2xl);
+  font-weight: var(--fw-heavy);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on;
+}
+
+.card-change {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-change-amt { }
+.card-change-pct {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-semi);
+  padding:     2px 6px;
+  border-radius: var(--r-pill);
+}
+.rise .card-change-pct { background:rgba(255,59,48,.10); }
+.fall .card-change-pct { background:rgba(0,122,255,.10); }
+
+/* ── Circular Gauge (SVG) ───────────────────────────────────── */
+.card-gauge-wrap {
+  display:    flex;
+  flex-direction: column;
+  align-items: center;
+  gap:         3px;
+  flex-shrink: 0;
+}
+
+.circular-gauge {
+  position:   relative;
+  width:      48px;
+  height:     48px;
+  flex-shrink: 0;
+}
+
+.gauge-svg {
+  width:   100%;
+  height:  100%;
+  transform: rotate(-90deg); /* Start from 12 o'clock */
+}
+
+/* Track ring */
+.gauge-track {
+  fill:         none;
+  stroke:       rgba(0,0,0,.07);
+  stroke-width: 4;
+}
+
+/* Progress arc */
+.gauge-fill {
+  fill:           none;
+  stroke-width:   4;
+  stroke-linecap: round;
+  /*
+    r=18 → circumference = 2π×18 ≈ 113.1
+    stroke-dasharray set per-element by JS
+    Transition: slow + ease-out for dramatic fill-up on load
+  */
+  transition:
+    stroke-dashoffset 700ms cubic-bezier(.16,1,.3,1),
+    stroke            400ms var(--ease-smooth);
+}
+
+/* High strength (≥70%) — vibrant accent */
+.gauge-fill.high {
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 3px rgba(0,113,227,.35));
+}
+
+/* Low strength (<70%) — desaturated gray */
+.gauge-fill.low {
+  stroke: rgba(134,134,139,.45);
+  filter: none;
+}
+
+/* Center text inside gauge */
+.gauge-label {
+  position:  absolute;
+  inset:     0;
+  display:   flex;
+  flex-direction: column;
+  align-items:   center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.gauge-pct {
+  font-size:   10px;
+  font-weight: var(--fw-bold);
+  color:       var(--text-pri);
+  font-variant-numeric: tabular-nums;
+  transition:  color 400ms var(--ease-smooth);
+}
+.gauge-pct.low-text { color: var(--text-ter); }
+
+.gauge-caption {
+  font-size:   8px;
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  margin-top:  1px;
+  letter-spacing: .2px;
+}
+
+/* ── Fade-out (10분 이탈 대기) — override hover physics ─────── */
+.stock-card.fade-out {
+  opacity:  0.50;
+  transform: scale(.98) !important; /* prevent hover lifting */
+  filter:   saturate(.30) brightness(.98);
+  pointer-events: none;   /* 이탈 종목은 클릭 차단 */
+}
+.stock-card.fade-out::before { display:none; }
+
+/* Fade-out timer badge */
+.fadeout-timer {
+  position:  absolute;
+  top:  var(--s3);
+  right: var(--s3);
+  font-size:  9px;
+  font-weight: var(--fw-semi);
+  color:  var(--text-ter);
+  background: rgba(0,0,0,.04);
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Card entry animation ────────────────────────────────────── */
+@keyframes card-in {
+  from { opacity:0; transform: translateY(10px) scale(.97); }
+  to   { opacity:1; transform: translateY(0)    scale(1);   }
+}
+.stock-card {
+  animation: card-in 320ms var(--ease-out) both;
+}
+/* Stagger via CSS custom property set by JS */
+.stock-card { animation-delay: var(--card-delay, 0ms); }
+
+
+/* ================================================================
+   STEP 3 — GLOBAL NEWS TAB
+   Apple News 스타일 다이내믹 레이아웃
+================================================================ */
+
+/* ── News Canvas Layout ─────────────────────────────────────── */
+/*
+  2-zone layout:
+    Zone A (Hero) — 전체 너비 히어로 카드
+    Zone B (Grid) — 3열 반응형 그리드 (리스트형 + 카드형 혼합)
+*/
+.news-canvas {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--s5);
+  padding-bottom: var(--s10);
+}
+
+/* ── ZONE A: Hero News Card ─────────────────────────────────── */
+.news-hero {
+  position:        relative;
+  display:         grid;
+  grid-template-columns: 1fr 420px;
+  min-height:      260px;
+  border-radius:   var(--r-xl);
+  overflow:        hidden;
+  background:      var(--bg-card-s);
+  box-shadow:      var(--sh-hover);
+  cursor:          pointer;
+  border:          var(--border-d);
+  transition:
+    transform    240ms cubic-bezier(.34,1.56,.64,1),
+    box-shadow   300ms cubic-bezier(.25,.46,.45,.94);
+  animation: card-in 350ms var(--ease-out) both;
+}
+.news-hero:hover {
+  transform:  translateY(-4px) scale(1.006);
+  box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.07);
+}
+.news-hero:active {
+  transform:  translateY(-1px) scale(1.002);
+  transition: transform 80ms ease;
+}
+
+/* Hero thumbnail (right side) */
+.hero-thumb {
+  position: relative;
+  overflow: hidden;
+}
+.hero-thumb-img {
+  width:       100%;
+  height:      100%;
+  object-fit:  cover;
+  display:     block;
+  transition:  transform 500ms var(--ease-smooth);
+}
+.news-hero:hover .hero-thumb-img { transform: scale(1.04); }
+
+/* Gradient fallback for thumb (CSS-painted) */
+.hero-thumb-gradient {
+  width:   100%;
+  height:  100%;
+  background: var(--thumb-grad, linear-gradient(135deg,#0071E3,#5E5CE6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  transition: transform 500ms var(--ease-smooth);
+}
+.news-hero:hover .hero-thumb-gradient { transform: scale(1.04); }
+
+/* Dark overlay bottom-fade on thumb */
+.hero-thumb::after {
+  content:  '';
+  position: absolute;
+  inset:    0;
+  background: linear-gradient(to right, rgba(255,255,255,.12) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Hero body (left side) */
+.hero-body {
+  display:        flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding:        var(--s6) var(--s6) var(--s5);
+  gap:            var(--s4);
+}
+
+.hero-meta-row {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);
+}
+
+.hero-source-badge {
+  font-size:     var(--text-xs);
+  font-weight:   var(--fw-semi);
+  color:         var(--accent);
+  background:    rgba(0,113,227,.10);
+  padding:       3px 9px;
+  border-radius: var(--r-pill);
+  letter-spacing:.2px;
+}
+
+.hero-category {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+/* Sentiment dot — hero */
+.sentiment-dot {
+  flex-shrink: 0;
+  width:       9px;
+  height:      9px;
+  border-radius: 50%;
+  margin-left: auto;
+  box-shadow: 0 0 0 2.5px rgba(255,255,255,.8);
+}
+.s-pos { background: var(--positive); box-shadow: 0 0 0 2.5px rgba(52,199,89,.20); }
+.s-neu { background: var(--caution);  box-shadow: 0 0 0 2.5px rgba(255,159,10,.20);}
+.s-neg { background: var(--negative); box-shadow: 0 0 0 2.5px rgba(255,59,48,.20); }
+
+/* Hero title */
+.hero-title {
+  font-size:      22px;
+  font-weight:    var(--fw-bold);
+  color:          var(--text-pri);
+  line-height:    1.35;
+  letter-spacing: -.4px;
+  display:        -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow:       hidden;
+}
+
+/* Hero summary */
+.hero-summary {
+  font-size:   var(--text-base);
+  font-weight: var(--fw-regular);
+  color:       var(--text-sec);
+  line-height: 1.6;
+  display:     -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow:    hidden;
+}
+
+/* Hero footer */
+.hero-footer {
+  display:     flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap:         var(--s4);
+  margin-top:  auto;
+}
+
+.hero-time {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  letter-spacing: .1px;
+}
+
+/* ── ZONE B: News Grid ──────────────────────────────────────── */
+.news-grid-zone {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+/* Wide card spans 2 columns */
+.news-card-wide { grid-column: span 2; }
+
+@media (max-width: 1100px) {
+  .news-grid-zone { grid-template-columns: repeat(2, 1fr); }
+  .news-card-wide { grid-column: span 1; }
+  .news-hero { grid-template-columns: 1fr 300px; }
+}
+@media (max-width: 720px) {
+  .news-grid-zone { grid-template-columns: 1fr; }
+  .news-hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-thumb { height: 180px; }
+}
+
+/* ── News Card (Standard) ───────────────────────────────────── */
+.news-card {
+  position:        relative;
+  display:         flex;
+  flex-direction:  column;
+  gap:             var(--s3);
+  padding:         var(--s4) var(--s5);
+  background:      var(--bg-card);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border:          var(--border-d);
+  border-radius:   var(--r-lg);
+  box-shadow:      var(--sh-card);
+  cursor:          pointer;
+  overflow:        hidden;
+  transition:
+    transform    220ms cubic-bezier(.34,1.56,.64,1),
+    box-shadow   300ms cubic-bezier(.25,.46,.45,.94),
+    border-color 150ms ease;
+  animation:       card-in 320ms var(--ease-out) both;
+  animation-delay: var(--news-delay, 0ms);
+  will-change:     transform;
+}
+.news-card:hover {
+  transform:    translateY(-4px) scale(1.010);
+  box-shadow:   0 10px 30px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+  border-color: rgba(255,255,255,.80);
+}
+.news-card:active {
+  transform:  translateY(-1px) scale(1.003);
+  transition: transform 80ms ease;
+}
+
+/* Hover accent top line */
+.news-card::before {
+  content: '';
+  position: absolute; top:0; left: var(--s5); right: var(--s5);
+  height: 2px; border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,113,227,.35), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.news-card:hover::before { opacity: 1; }
+
+/* Card with thumb (horizontal layout) */
+.news-card.has-thumb {
+  flex-direction: row;
+  gap: var(--s4);
+  align-items: flex-start;
+  padding: var(--s4);
+}
+.news-card.has-thumb .news-body { flex: 1; min-width: 0; }
+
+/* Card thumbnail (small) */
+.news-thumb-sm {
+  width:         100px;
+  height:        80px;
+  border-radius: var(--r-md);
+  overflow:      hidden;
+  flex-shrink:   0;
+  transition:    transform 400ms var(--ease-smooth);
+}
+.news-thumb-sm-gradient {
+  width:   100%;
+  height:  100%;
+  background: var(--thumb-grad, linear-gradient(135deg,#34C759,#0071E3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.news-card.has-thumb:hover .news-thumb-sm { transform: scale(1.06); }
+
+/* ── News Card Internals ────────────────────────────────────── */
+.news-card-header {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s2);
+}
+
+.news-source {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-semi);
+  color:       var(--accent);
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+.news-category-tag {
+  font-size:     9px;
+  font-weight:   var(--fw-semi);
+  color:         var(--text-ter);
+  background:    rgba(0,0,0,.05);
+  padding:       2px 7px;
+  border-radius: var(--r-pill);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+/* Sentiment dot in header (smaller for list cards) */
+.news-card-header .sentiment-dot {
+  width:  7px; height: 7px;
+  margin-left: auto;
+  box-shadow: none;
+}
+
+/* Title — typography tier 1 */
+.news-title {
+  font-size:   var(--text-base);
+  font-weight: var(--fw-bold);
+  color:       var(--text-pri);
+  line-height: 1.45;
+  letter-spacing: -.2px;
+  display:     -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow:    hidden;
+}
+.news-card-wide .news-title,
+.news-card.has-thumb .news-title {
+  font-size: var(--text-md);
+  -webkit-line-clamp: 2;
+}
+
+/* Summary — typography tier 2 */
+.news-summary {
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-regular);
+  color:       var(--text-sec);
+  line-height: 1.6;
+  display:     -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:    hidden;
+}
+
+/* Footer — meta + stock tags */
+.news-footer {
+  display:     flex;
+  align-items: center;
+  justify-content: space-between;
+  gap:         var(--s2);
+  margin-top:  auto;
+  flex-wrap:   wrap;
+}
+
+/* Meta — typography tier 3 (lightest) */
+.news-meta {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  white-space: nowrap;
+  letter-spacing: .1px;
+}
+
+/* Stock ticker mini tags */
+.news-tags {
+  display:    flex;
+  flex-wrap:  wrap;
+  gap:        4px;
+  align-items: center;
+}
+
+.news-tag {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           3px;
+  height:        18px;
+  padding:       0 7px;
+  border-radius: var(--r-pill);
+  font-size:     10px;
+  font-weight:   var(--fw-semi);
+  letter-spacing:.2px;
+  white-space:   nowrap;
+  /* Variant set via data-market attr */
+}
+.news-tag.tag-kr {
+  background: rgba(0,113,227,.09);
+  color:      var(--accent);
+}
+.news-tag.tag-us {
+  background: rgba(94,92,230,.09);
+  color:      var(--accent2);
+}
+.news-tag.tag-cn {
+  background: rgba(255,59,48,.08);
+  color:      #C0221A;
+}
+.news-tag.tag-crypto {
+  background: rgba(255,159,10,.10);
+  color:      #9A5800;
+}
+
+/* ── Section Label ──────────────────────────────────────────── */
+.news-section-label {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s3);
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-semi);
+  color:       var(--text-ter);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.news-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0,0,0,.07);
+  border-radius: 1px;
+}
+
+/* ── Sentiment Legend (subheader area) ──────────────────────── */
+.sentiment-legend {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s4);
+}
+.legend-item {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-sec);
+}
+
+
+/* ================================================================
+   STEP 4 — DETAIL MODAL INTERIOR
+================================================================ */
+
+/* ── Modal Panel: 2-Column Split ────────────────────────────── */
+.modal-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.modal-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         var(--s4) var(--s5);
+  border-bottom:   var(--border-d);
+  flex-shrink:     0;
+  gap:             var(--s4);
+}
+
+.modal-stock-info {
+  display:    flex;
+  align-items: baseline;
+  gap:         var(--s3);
+}
+
+.modal-stock-name {
+  font-size:   var(--text-xl);
+  font-weight: var(--fw-bold);
+  color:       var(--text-pri);
+  letter-spacing: -.3px;
+}
+
+.modal-stock-code {
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-medium);
+  color:       var(--text-sec);
+}
+
+.modal-price-block {
+  display:    flex;
+  align-items: baseline;
+  gap:         var(--s3);
+}
+
+.modal-price {
+  font-size:   var(--text-2xl);
+  font-weight: var(--fw-heavy);
+  letter-spacing: -.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-change {
+  font-size:   var(--text-base);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-badge {
+  font-size:     var(--text-xs);
+  font-weight:   var(--fw-semi);
+  padding:       4px 10px;
+  border-radius: var(--r-pill);
+}
+
+.modal-close-btn {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  width:           34px;
+  height:          34px;
+  border-radius:   var(--r-md);
+  color:           var(--text-sec);
+  font-size:       20px;
+  line-height:     1;
+  transition:      background var(--dur-fast), color var(--dur-fast), transform 150ms var(--ease-spring);
+  flex-shrink:     0;
+}
+.modal-close-btn:hover  { background: var(--bg-hover); color: var(--text-pri); }
+.modal-close-btn:active { transform: scale(.88); }
+
+/* ── Modal Body: Chart (left) + Order Book (right) ──────────── */
+.modal-body {
+  display:  grid;
+  grid-template-columns: 1fr 320px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── LEFT: Chart Panel ──────────────────────────────────────── */
+.chart-panel {
+  display:        flex;
+  flex-direction: column;
+  border-right:   var(--border-d);
+  overflow:       hidden;
+}
+
+/* Chart inner tab bar */
+.chart-tab-bar {
+  display:     flex;
+  align-items: center;
+  gap:         var(--s1);
+  padding:     var(--s3) var(--s4);
+  border-bottom: var(--border-d);
+  flex-shrink:   0;
+}
+
+.chart-tab-btn {
+  height:        30px;
+  padding:       0 var(--s3);
+  border-radius: var(--r-sm);
+  font-size:     var(--text-sm);
+  font-weight:   var(--fw-medium);
+  color:         var(--text-sec);
+  transition:    background var(--dur-fast), color var(--dur-fast);
+}
+.chart-tab-btn:hover  { background: var(--bg-hover); color: var(--text-pri); }
+.chart-tab-btn.active {
+  background:  rgba(0,113,227,.10);
+  color:       var(--accent);
+  font-weight: var(--fw-semi);
+}
+
+/* Chart sub-tab indicator pills */
+.chart-tab-indicator {
+  display:       inline-flex;
+  align-items:   center;
+  gap:           3px;
+  height:        24px;
+  padding:       0 10px;
+  border-radius: var(--r-pill);
+  font-size:     10px;
+  font-weight:   var(--fw-semi);
+  background:    rgba(0,113,227,.08);
+  color:         var(--accent);
+  margin-left:   auto;
+}
+
+/* Chart views container */
+.chart-views {
+  position: relative;
+  flex:     1;
+  overflow: hidden;
+}
+
+.chart-view {
+  position:   absolute;
+  inset:      0;
+  display:    flex;
+  flex-direction: column;
+  gap:        var(--s3);
+  padding:    var(--s5);
+  opacity:    0;
+  pointer-events: none;
+  transform:  translateY(6px);
+  transition: opacity  200ms var(--ease-out),
+              transform 200ms var(--ease-out);
+}
+.chart-view.active {
+  opacity:        1;
+  pointer-events: all;
+  transform:      translateY(0);
+}
+
+/* Main chart placeholder area */
+.chart-area-main {
+  flex:          2;
+  border-radius: var(--r-md);
+  background:    linear-gradient(
+    180deg,
+    rgba(0,113,227,.03) 0%,
+    rgba(0,113,227,.06) 100%
+  );
+  border:        1px dashed rgba(0,113,227,.18);
+  display:       flex;
+  flex-direction: column;
+  align-items:   center;
+  justify-content: center;
+  gap:           var(--s2);
+  position:      relative;
+  overflow:      hidden;
+}
+
+/* Simulated candlestick silhouette inside placeholder */
+.chart-area-main::before {
+  content:    '';
+  position:   absolute;
+  bottom:     20%;
+  left:       10%;
+  right:      10%;
+  height:     40%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 6px,
+    rgba(0,113,227,.10) 6px,
+    rgba(0,113,227,.10) 10px
+  );
+  border-radius: 2px;
+}
+
+.chart-placeholder-icon { font-size: 28px; opacity: .4; }
+.chart-placeholder-text {
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-medium);
+  color:       var(--text-ter);
+  letter-spacing: .2px;
+}
+
+/* Sub-indicator rows */
+.chart-area-sub {
+  flex:          1;
+  min-height:    60px;
+  max-height:    90px;
+  border-radius: var(--r-md);
+  border:        1px dashed rgba(0,0,0,.08);
+  background:    rgba(0,0,0,.02);
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  gap:           var(--s6);
+}
+
+.chart-indicator-label {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-semi);
+  color:       var(--text-ter);
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+
+/* ── RIGHT: Order Book Panel ─────────────────────────────────── */
+.orderbook-panel {
+  display:        flex;
+  flex-direction: column;
+  overflow:       hidden;
+}
+
+.orderbook-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         var(--s3) var(--s4);
+  border-bottom:   var(--border-d);
+  flex-shrink:     0;
+}
+
+.orderbook-title {
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-semi);
+  color:       var(--text-pri);
+}
+
+.orderbook-spread {
+  font-size:   var(--text-xs);
+  font-weight: var(--fw-medium);
+  color:       var(--text-sec);
+}
+
+/* Columns label row */
+.orderbook-cols {
+  display:    grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap:        var(--s2);
+  padding:    var(--s2) var(--s4);
+  border-bottom: var(--border-d);
+  flex-shrink: 0;
+}
+.ob-col-label {
+  font-size:   9px;
+  font-weight: var(--fw-semi);
+  color:       var(--text-ter);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.ob-col-label:nth-child(1) { text-align: right; }
+.ob-col-label:nth-child(3) { text-align: left;  }
+
+/* Scrollable rows area */
+.orderbook-rows {
+  flex:       1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display:    flex;
+  flex-direction: column;
+}
+
+/* ── Each order-book row ─────────────────────────────────────── */
+/*
+  3-column grid: [잔량(매도)] [호가] [잔량(매수)]
+  The Bar gauge uses a linear-gradient on the CELL BACKGROUND
+  to fill from the outer edge toward the price column,
+  proportional to qty / maxQty.
+*/
+.ob-row {
+  display:    grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height:      32px;
+  gap:         0;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0,0,0,.03);
+  transition:  background 150ms ease;
+}
+.ob-row:hover { background: rgba(0,0,0,.025); }
+
+/* Divider line at center (current price) */
+.ob-row.ob-center {
+  height:      36px;
+  border-top:  1px solid rgba(0,0,0,.10);
+  border-bottom: 1px solid rgba(0,0,0,.10);
+  background:  rgba(0,0,0,.025);
+}
+.ob-row.ob-center .ob-price {
+  font-weight: var(--fw-heavy);
+  font-size:   var(--text-sm);
+}
+
+/* Price cell */
+.ob-price {
+  text-align:  center;
+  padding:     0 var(--s2);
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-semi);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Bar Gauge Cells (Apple Health style) ────────────────────
+   linear-gradient fills from the PRICE side (inner) outward.
+   The fill width is set via --fill CSS custom property (0–100%).
+   rgba with very low opacity so text remains perfectly readable.
+─────────────────────────────────────────────────────────────── */
+.ob-qty-ask {
+  /* Sell side — fills left-to-right from right edge (price side) */
+  text-align:  right;
+  padding:     0 var(--s3) 0 var(--s2);
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-medium);
+  color:       var(--rise);
+  font-variant-numeric: tabular-nums;
+  background:  linear-gradient(
+    to left,
+    rgba(255,59,48, .12) var(--fill, 0%),
+    transparent          var(--fill, 0%)
+  );
+  transition:  background 400ms var(--ease-out);
+}
+
+.ob-qty-bid {
+  /* Buy side — fills right-to-left from left edge (price side) */
+  text-align:  left;
+  padding:     0 var(--s2) 0 var(--s3);
+  font-size:   var(--text-sm);
+  font-weight: var(--fw-medium);
+  color:       var(--fall);
+  font-variant-numeric: tabular-nums;
+  background:  linear-gradient(
+    to right,
+    rgba(0,122,255, .12) var(--fill, 0%),
+    transparent          var(--fill, 0%)
+  );
+  transition:  background 400ms var(--ease-out);
+}
+
+/* ── Order Book Summary Footer ──────────────────────────────── */
+.orderbook-footer {
+  padding:       var(--s3) var(--s4);
+  border-top:    var(--border-d);
+  flex-shrink:   0;
+  display:       flex;
+  flex-direction: column;
+  gap:           var(--s2);
+}
+
+.ob-ratio-bar {
+  height:        6px;
+  border-radius: var(--r-pill);
+  overflow:      hidden;
+  background:    rgba(0,0,0,.06);
+}
+
+.ob-ratio-fill {
+  height:    100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--fall), var(--rise));
+  /* width set by JS via style attribute */
+  transition: width 600ms var(--ease-out);
+}
+
+.ob-ratio-labels {
+  display:         flex;
+  justify-content: space-between;
+  font-size:       var(--text-xs);
+  font-weight:     var(--fw-medium);
+}
+.ob-ratio-buy  { color: var(--fall); }
+.ob-ratio-sell { color: var(--rise); }
+
+
+/* ================================================================
+   FINAL POLISH
+   1. Professional Number Typography
+   2. Dark Mode (prefers-color-scheme: dark)
+   3. Responsive Mobile / Tablet (≤768px)
+   4. Mobile Modal (Slide-Up Sheet)
+================================================================ */
+
+
+/* ────────────────────────────────────────────────────────────────
+   1. PROFESSIONAL NUMBER TYPOGRAPHY
+   모든 수치 데이터에 tabular-nums + 타이트한 letter-spacing 적용
+────────────────────────────────────────────────────────────────── */
+.num,
+.card-price,
+.card-change,
+.card-change-amt,
+.card-change-pct,
+.gauge-pct,
+.modal-price,
+.modal-change,
+.ob-price,
+.ob-qty-ask,
+.ob-qty-bid,
+.ob-ratio-labels span,
+.index-val,
+.index-chg,
+.clock-display,
+.stat-val {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on, "lnum" on;
+  letter-spacing: -0.5px;
+}
+
+/* Badge inner numbers — crisp and semi-bold */
+.card-change-pct,
+.stat-val.accent,
+.badge-golden,
+.badge-dip,
+.badge-break,
+.badge-vol,
+.badge-macd,
+.badge-bband,
+.badge-env {
+  font-weight: var(--fw-semi); /* 600 */
+}
+
+/* Rise / fall values — bold contrast */
+.card-price.rise, .card-price.fall,
+.modal-price.rise, .modal-price.fall {
+  font-weight: var(--fw-heavy); /* 800 */
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   2. DARK MODE
+   시스템 설정에 따라 자동 전환. 채도를 살짝 낮춰 눈의 피로 감소.
+────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Background layers */
+    --bg:          #000000;
+    --bg-card:     rgba(28,28,30, 0.72);
+    --bg-card-s:   rgba(28,28,30, 0.92);
+    --bg-header:   rgba(0,0,0, 0.90);
+    --bg-subhdr:   rgba(18,18,20, 0.82);
+    --bg-hover:    rgba(255,255,255,0.05);
+    --bg-active:   rgba(255,255,255,0.09);
+
+    /* Text */
+    --text-pri:    #F5F5F7;
+    --text-sec:    #A1A1A6;
+    --text-ter:    #636366;
+    --text-inv:    #1D1D1F;
+
+    /* 다크 모드: 상승/하락 — 채도를 약간 낮춰 배경 대비 유지 */
+    --rise:        #E8362D;   /* 빨강 채도 -5% */
+    --fall:        #1A6FD4;   /* 파랑 채도 -5% */
+    --accent:      #2C86F5;
+    --accent2:     #7876E0;
+    --positive:    #28A745;   /* 초록 채도 -5% */
+    --caution:     #D4870A;
+    --negative:    #E8362D;
+
+    /* Badge tokens — dark adjusted */
+    --badge-gold-bg: rgba(255,204,0,.16);  --badge-gold-fg: #FFCC00;
+    --badge-dip-bg:  rgba(52,199,89,.15);  --badge-dip-fg:  #34C759;
+    --badge-brk-bg:  rgba(44,134,245,.15); --badge-brk-fg:  #2C86F5;
+    --badge-vol-bg:  rgba(120,118,224,.15);--badge-vol-fg:  #7876E0;
+
+    /* Borders — luminous glass edges in dark */
+    --border-g: 1px solid rgba(255,255,255,.12);
+    --border-d: 1px solid rgba(255,255,255,.09);
+
+    /* Shadows — deeper on dark */
+    --sh-card:  0 4px 20px rgba(0,0,0,.30), 0 1px 4px rgba(0,0,0,.20);
+    --sh-hover: 0 12px 40px rgba(0,0,0,.45), 0 3px 10px rgba(0,0,0,.25);
+    --sh-modal: 0 40px 100px rgba(0,0,0,.60), 0 8px 24px rgba(0,0,0,.40);
+    --sh-hdr:   0 1px 0 rgba(255,255,255,.04);
+  }
+
+  /* Body */
+  body { background: var(--bg); }
+
+  /* Header & Subheader glass on dark */
+  .header {
+    background:    var(--bg-header);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .subheader {
+    background:    var(--bg-subhdr);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+
+  /* Magic tab nav pill */
+  .magic-tab-nav {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.09);
+  }
+  .tab-indicator { background: rgba(255,255,255,.14); box-shadow: none; }
+  .tab-btn.active { color: var(--text-pri); }
+
+  /* Stock cards */
+  .stock-card {
+    background:    var(--bg-card);
+    border:        var(--border-d);
+  }
+  .stock-card:hover {
+    border-color: rgba(255,255,255,.20);
+    box-shadow:   var(--sh-hover);
+  }
+  .stock-card::before {
+    background: linear-gradient(90deg, transparent, rgba(44,134,245,.35), transparent);
+  }
+
+  /* Skeleton shimmer on dark */
+  .card-skeleton { background: rgba(44,44,46,0.8); }
+  @keyframes shimmer-dark {
+    from { background-position: -200% 0; }
+    to   { background-position:  200% 0; }
+  }
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,.03) 0%,
+      rgba(255,255,255,.07) 50%,
+      rgba(255,255,255,.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-dark 1.6s linear infinite;
+  }
+
+  /* Circular gauge track */
+  .gauge-track { stroke: rgba(255,255,255,.08); }
+  .gauge-fill.high { stroke: var(--accent); filter: drop-shadow(0 0 4px rgba(44,134,245,.40)); }
+  .gauge-fill.low  { stroke: rgba(255,255,255,.20); }
+
+  /* Fade-out card on dark */
+  .stock-card.fade-out { filter: saturate(.25) brightness(.70); }
+
+  /* News cards */
+  .news-card  { background: var(--bg-card); border: var(--border-d); }
+  .news-hero  { background: var(--bg-card-s); border: var(--border-d); }
+  .news-card:hover  { border-color: rgba(255,255,255,.18); }
+  .news-hero:hover  { border-color: rgba(255,255,255,.18); }
+
+  /* News section label divider */
+  .news-section-label::after { background: rgba(255,255,255,.08); }
+
+  /* News category tag */
+  .news-category-tag { background: rgba(255,255,255,.07); color: var(--text-ter); }
+
+  /* Sentiment dots ring on dark */
+  .s-pos { box-shadow: 0 0 0 2.5px rgba(40,167,69,.25); }
+  .s-neu { box-shadow: 0 0 0 2.5px rgba(212,135,10,.25); }
+  .s-neg { box-shadow: 0 0 0 2.5px rgba(232,54,45,.25); }
+
+  /* Subheader stats */
+  .stat-pill          { background: rgba(255,255,255,.06); }
+  .warn-pill          { background: rgba(255,59,48,.10);   }
+  .positive-pill      { background: rgba(40,167,69,.09);   }
+  .neutral-pill       { background: rgba(212,135,10,.09);  }
+  .negative-pill      { background: rgba(232,54,45,.09);   }
+
+  /* Subheader action buttons */
+  .sub-btn        { color: var(--text-sec); }
+  .sub-btn:hover  { background: rgba(255,255,255,.07); color: var(--text-pri); }
+  .sub-btn.active { background: rgba(44,134,245,.15); color: var(--accent); }
+
+  /* Toast on dark */
+  .toast { background: rgba(44,44,46,.95); border: 1px solid rgba(255,255,255,.10); }
+
+  /* Modal overlay dimming */
+  .modal-overlay { background: rgba(0,0,0,.65); }
+  .modal-panel   {
+    background:      rgba(22,22,24,.92);
+    backdrop-filter: var(--blur-lg);
+    -webkit-backdrop-filter: var(--blur-lg);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .modal-header { border-bottom: 1px solid rgba(255,255,255,.07); }
+  .modal-body   .chart-panel { border-right: 1px solid rgba(255,255,255,.07); }
+  .chart-tab-bar { border-bottom: 1px solid rgba(255,255,255,.07); }
+  .chart-tab-btn:hover { background: rgba(255,255,255,.07); }
+  .chart-tab-btn.active { background: rgba(44,134,245,.15); }
+  .chart-area-main {
+    background: linear-gradient(180deg, rgba(44,134,245,.04) 0%, rgba(44,134,245,.08) 100%);
+    border: 1px dashed rgba(44,134,245,.20);
+  }
+  .chart-area-main::before {
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 6px,
+      rgba(44,134,245,.09) 6px, rgba(44,134,245,.09) 10px
+    );
+  }
+  .chart-area-sub { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.07); }
+
+  /* Order book on dark */
+  .orderbook-header,
+  .orderbook-cols   { border-bottom: 1px solid rgba(255,255,255,.07); }
+  .orderbook-footer { border-top: 1px solid rgba(255,255,255,.07); }
+  .ob-row           { border-bottom: 1px solid rgba(255,255,255,.03); }
+  .ob-row:hover     { background: rgba(255,255,255,.03); }
+  .ob-row.ob-center {
+    background:  rgba(255,255,255,.05);
+    border-top:  1px solid rgba(255,255,255,.09);
+    border-bottom: 1px solid rgba(255,255,255,.09);
+  }
+  .ob-qty-ask { background: linear-gradient(to left, rgba(232,54,45,.15) var(--fill,0%), transparent var(--fill,0%)); }
+  .ob-qty-bid { background: linear-gradient(to right,rgba(26,111,212,.15) var(--fill,0%), transparent var(--fill,0%)); }
+  .ob-ratio-bar { background: rgba(255,255,255,.08); }
+
+  /* Scrollbar invisible on dark */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+
+  /* Market indices text */
+  .index-name { color: var(--text-sec); }
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   3. RESPONSIVE — TABLET (≤1024px)
+────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .stock-grid      { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .news-grid-zone  { grid-template-columns: repeat(2, 1fr); }
+  .news-card-wide  { grid-column: span 1; }
+  .news-hero       { grid-template-columns: 1fr 260px; }
+  .modal-body      { grid-template-columns: 1fr 280px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   4. RESPONSIVE — MOBILE (≤768px)
+────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* ── Base adjustments ── */
+  html { font-size: 15px; }
+
+  /* Header: tighter padding, hide market indices */
+  .header        { padding: 0 var(--s3); }
+  .market-indices{ display: none; }
+  .logo-version  { display: none; }
+
+  /* ── Magic Tab Nav: horizontal scroll, no scrollbar ── */
+  .header-center { flex: 1; overflow: hidden; }
+  .magic-tab-nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;        /* Firefox */
+  }
+  .magic-tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 0 var(--s3);
+  }
+
+  /* ── Subheader: scrollable actions ── */
+  .subheader        { padding: 0 var(--s3); }
+  .subheader-view   { gap: var(--s2); }
+  .subheader-actions {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: var(--s1);
+  }
+  .subheader-actions::-webkit-scrollbar { display: none; }
+  .stats-row { gap: var(--s2); }
+  .stat-pill { padding: 4px 8px; font-size: var(--text-xs); }
+
+  /* ── Main canvas ── */
+  .main-canvas { padding: var(--s3); }
+
+  /* ── Stock Grid: Single column, full width ── */
+  .stock-grid {
+    grid-template-columns: 1fr;
+    gap: var(--s3);
+  }
+
+  /* ── Card: mobile touch haptic (:active press) ── */
+  .stock-card {
+    min-height: 130px;
+    padding: var(--s3) var(--s4);
+  }
+  /* Disable mouse hover lift on touch device; use active instead */
+  @media (hover: none) {
+    .stock-card:hover {
+      transform: none;
+      box-shadow: var(--sh-card);
+      border-color: initial;
+    }
+    .stock-card:active {
+      transform: scale(0.97) !important;
+      box-shadow: var(--sh-card);
+      transition: transform 100ms ease;
+    }
+    .news-card:hover, .news-hero:hover {
+      transform: none;
+      box-shadow: var(--sh-card);
+    }
+    .news-card:active, .news-hero:active {
+      transform: scale(0.97) !important;
+      transition: transform 100ms ease;
+    }
+  }
+
+  /* ── Card typography: slightly larger for finger-size readability ── */
+  .card-name  { font-size: var(--text-md); }
+  .card-price { font-size: var(--text-xl); }
+
+  /* ── News: single column ── */
+  .news-grid-zone { grid-template-columns: 1fr; }
+  .news-card-wide { grid-column: span 1; }
+  .news-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .hero-thumb { height: 160px; order: -1; }
+  .hero-title { font-size: var(--text-md); }
+  .hero-summary { display: none; } /* save space on tiny screens */
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   5. MOBILE MODAL — Slide-Up Sheet (≤768px)
+   데스크탑 center-popup → 모바일 bottom-sheet 슬라이드업
+────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Overlay: fully dark for sheet effect */
+  .modal-overlay {
+    align-items:  flex-end;
+    padding:      0;
+  }
+
+  /* Panel: full-width bottom sheet */
+  .modal-panel {
+    width:           100%;
+    max-width:       100%;
+    max-height:      92dvh;          /* dynamic viewport height */
+    border-radius:   var(--r-xl) var(--r-xl) 0 0;
+
+    /* Slide-up animation */
+    transform:       translateY(100%);
+    transition:
+      transform    var(--dur-modal) cubic-bezier(.34,1.56,.64,1),
+      opacity      var(--dur-modal) var(--ease-out);
+  }
+
+  /* Open state: slide up into view */
+  .modal-overlay.open .modal-panel {
+    transform: translateY(0);
+  }
+
+  /* Pull handle bar (visual cue) */
+  .modal-panel::before {
+    content:       '';
+    display:       block;
+    width:         40px;
+    height:        4px;
+    background:    rgba(0,0,0,.15);
+    border-radius: var(--r-pill);
+    margin:        var(--s3) auto 0;
+    flex-shrink:   0;
+  }
+  @media (prefers-color-scheme: dark) {
+    .modal-panel::before { background: rgba(255,255,255,.20); }
+  }
+
+  /* Modal Header: compact on mobile */
+  .modal-header {
+    padding:    var(--s3) var(--s4);
+    flex-wrap:  wrap;
+    gap:        var(--s2);
+  }
+  .modal-stock-info { gap: var(--s2); }
+  .modal-price-block { gap: var(--s2); }
+  .modal-price  { font-size: var(--text-xl); }
+  .modal-change { font-size: var(--text-sm); }
+
+  /* Modal Body: VERTICAL STACK (chart top, order book bottom) */
+  .modal-body {
+    display:        flex;
+    flex-direction: column;
+    overflow-y:     auto;
+    overflow-x:     hidden;
+    -webkit-overflow-scrolling: touch;
+    max-height:     calc(92dvh - 130px);
+  }
+
+  /* Chart panel: upper half */
+  .chart-panel {
+    border-right:  none;
+    border-bottom: var(--border-d);
+    flex-shrink:   0;
+    height:        280px;
+  }
+  .chart-views { height: calc(280px - 44px); }
+
+  /* Order book: lower half — capped height, scrollable */
+  .orderbook-panel {
+    flex-shrink: 0;
+    max-height:  320px;
+  }
+
+  /* Chart placeholder smaller on mobile */
+  .chart-area-main { min-height: 140px; }
+  .chart-placeholder-icon { font-size: 22px; }
+  .chart-placeholder-text { font-size: var(--text-xs); }
+
+  /* Order book rows: tighter */
+  .ob-row { height: 28px; }
+  .ob-price,
+  .ob-qty-ask,
+  .ob-qty-bid { font-size: var(--text-xs); }
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   6. DESKTOP MODAL ANIMATION (re-confirm scale spring popup)
+   scale(0.95) → 1 with spring easing — already in base CSS,
+   this block ensures the transition only plays on ≥769px.
+────────────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .modal-panel {
+    transform:  scale(0.95) translateY(0);
+    opacity:    0;
+    transition:
+      transform var(--dur-modal) cubic-bezier(.34,1.56,.64,1),
+      opacity   var(--dur-modal) var(--ease-out);
+  }
+  .modal-overlay.open .modal-panel {
+    transform: scale(1) translateY(0);
+    opacity:   1;
+  }
+}
