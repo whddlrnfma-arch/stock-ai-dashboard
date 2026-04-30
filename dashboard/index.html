@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AntiGravity Trading Dashboard</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-rocket"></i></div>
+                <h1>AntiGravity</h1>
+                <span class="badge">AI System</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-crosshairs"></i> Targets</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-robot"></i> Strategy Config</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            
+            <div class="system-status">
+                <div class="status-indicator live"></div>
+                <span>Kiwoom API Connected</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2>Real-time Targets</h2>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Admin" class="avatar">
+                </div>
+            </header>
+
+            <!-- Stats Overview -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon pulse-blue"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="stat-info">
+                        <h3>Today's Targets</h3>
+                        <p class="stat-value" id="stat-today-count">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pulse-purple"><i class="fa-solid fa-brain"></i></div>
+                    <div class="stat-info">
+                        <h3>Top Strategy</h3>
+                        <p class="stat-value" id="stat-top-strategy">-</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pulse-green"><i class="fa-solid fa-server"></i></div>
+                    <div class="stat-info">
+                        <h3>DB Status</h3>
+                        <p class="stat-value" id="stat-db-status">Active</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="table-section">
+                <div class="table-header">
+                    <h3>Latest Signals</h3>
+                    <button class="btn-refresh" id="refresh-btn"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Strategy</th>
+                                <th>Price</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="targets-tbody">
+                            <!-- Data populated by JS -->
+                            <tr>
+                                <td colspan="7" class="loading-cell">Loading data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
